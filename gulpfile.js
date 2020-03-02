@@ -142,7 +142,7 @@ gulp.task('html', () => {
 
 gulp.task('ts', () => {
 	return gulp.src(
-		'./src/js/**/*.ts'
+		'./src/{js,data}/**/*.ts'
 	).pipe(
 		eslint({
 			configFile: './.eslint.js',
@@ -152,14 +152,14 @@ gulp.task('ts', () => {
 	).pipe(
 		eslint.failAfterError()
 	).pipe(newer({
-		dest: './tmp/js/',
+		dest: './tmp/',
 		ext: '.js',
 	})).pipe(
 		typescript.createProject('./tsconfig.json')()
 	).pipe(
 		replace(/\ {4}/g, '\t')
 	).pipe(gulp.dest(
-		'./tmp/js/'
+		'./tmp/'
 	));
 });
 

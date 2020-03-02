@@ -19,7 +19,12 @@
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "strict": true,
+		"strict": true,
+		"declarationDir": "./dist/",
+		"rootDir": "./src/",
         "target": "ESNext"
-	}
+	},
+	"include": [
+		"./src/"
+	]
 }
