@@ -1,10 +1,17 @@
 import {
 	ImageSource,
 	Album,
+	Track,
 	IpfsInstance,
 } from '../module';
+import { TemplateResult } from '../lit-html/lit-html';
 
 (async (): Promise<void> => {
+	const {html, render} = await import('../lit-html/lit-html.js');
+	const {asyncAppend} = await import('../lit-html/directives/async-append.js');
+	const {asyncReplace} = await import('../lit-html/directives/async-replace.js');
+	const buttonPlaysWhat: WeakMap<HTMLButtonElement, string> = new WeakMap();
+
 	const preloads = {
 		'style.css': document.head.querySelector(
 			'link[rel="preload"][as="style"][href$="/css/style.css"]'
@@ -67,43 +74,33 @@ import {
 
 	let currentAlbum: Album|undefined;
 
+	console.log(currentAlbum);
+
 	const albums = document.createElement('main');
 	albums.classList.add('albums');
 
 	document.body.appendChild(albums);
 
-	const view = document.createElement('main');
+	const views: WeakMap<Album, HTMLElement> = new WeakMap();
 	const audio = document.createElement('audio');
 	audio.controls = true;
 	audio.src=  '';
 
-	view.classList.add('view');
-
-	const buttonPlaysWhat: WeakMap<HTMLButtonElement, string> = new WeakMap();
-
 	back.addEventListener('click', () => {
-		document.body.removeChild(view);
+		if (currentAlbum) {
+			document.body.removeChild(views.get(currentAlbum) as HTMLElement);
+		}
 		document.body.appendChild(albums);
 		back.disabled = true;
 		currentAlbum = undefined;
-	});
-
-	view.addEventListener('click', (e) => {
-		if (
-			(e.target instanceof HTMLButtonElement) &&
-			buttonPlaysWhat.has(e.target)
-		) {
-			audio.pause();
-			audio.src = buttonPlaysWhat.get(e.target) + '';
-			audio.play();
-		}
 	});
 
 	document.body.appendChild(audio);
 
 	async function picture(
 		album: Album,
-		art: ImageSource
+		art: ImageSource,
+		className = ''
 	): Promise<HTMLPictureElement> {
 		const src = await url(album.path + art.subpath);
 		const srcset = await Promise.all(art.srcset.map(
@@ -129,93 +126,138 @@ import {
 
 		picture.appendChild(img);
 
+		picture.className = className;
+
 		return picture;
 	}
 
-	async function AddAlbum(album: Album): Promise<void> {
-		const button = document.createElement('button');
-		button.setAttribute('aria-label', `View &quot;${album.name}&quot;`);
-		button.setAttribute('data-name', album.name);
+	async function* yieldPlaceholderThenPicture(
+		placeholder: string,
+		album: Album,
+		art: ImageSource
+	): AsyncGenerator<string|HTMLPictureElement> {
+		yield placeholder;
 
-		albums.appendChild(button);
-
-		picture(album, album.art.covers[0]).then((appendPicture) => {
-			button.appendChild(appendPicture);
-		});
-
-		button.addEventListener(
-			'click',
-			() => {
-				currentAlbum = album;
-				document.body.removeChild(albums);
-
-				const covers = document.createElement('ol');
-				const tracks = document.createElement('ol');
-
-				covers.classList.add('covers');
-				tracks.classList.add('tracks');
-
-				album.tracks.forEach((track) => {
-					const li = document.createElement('li');
-					const button = document.createElement('button');
-
-					button.appendChild(document.createTextNode('▶'));
-					button.setAttribute(
-						'aria-label',
-						`Play ${track.name}`
-					);
-					button.disabled = true;
-
-					li.appendChild(button);
-					li.appendChild(document.createTextNode(track.name));
-
-					tracks.appendChild(li);
-
-					url(album.path + track.subpath).then((url: string) => {
-						buttonPlaysWhat.set(button, url);
-						button.disabled = false;
-					});
-				});
-
-				view.textContent = '';
-
-				view.appendChild(covers);
-				view.appendChild(tracks);
-
-				picture(album, album.art.background).then((appendPicture) => {
-					if (currentAlbum === album) {
-						appendPicture.classList.add('bg');
-						view.appendChild(appendPicture);
-					}
-				});
-
-				Promise.all(album.art.covers.map(
-					(cover): Promise<HTMLPictureElement> => {
-						return picture(album, cover);
-					}
-				)).then((pictures) => {
-					if (currentAlbum === album) {
-						pictures.forEach((appendPicture) => {
-							const li = document.createElement('li');
-							li.appendChild(appendPicture);
-
-							covers.appendChild(li);
-						});
-					}
-				});
-
-				document.body.appendChild(view);
-				(back as HTMLButtonElement).disabled = false;
-			}
-		);
+		yield await picture(album, art);
 	}
 
-	[
-		'../data/albums/OCRA-0025.js',
-		'../data/albums/OCRA-0029.js',
-	].forEach((albumModuleSrc) => {
-		import(albumModuleSrc).then((album) => {
-			AddAlbum(album.default);
-		})
-	});
+	async function* YieldTrackPlayButton(
+		album: Album,
+		track: Track
+	): AsyncGenerator<HTMLButtonElement> {
+		const div = document.createElement('div');
+
+		const trackUrl = await url(
+			album.path +
+			track.subpath
+		);
+
+		render(
+			html`
+				<button
+					aria-label="Play ${track.name}"
+					album=${album} track=${track}
+				>▶</button>
+			`,
+			div
+		);
+
+		const button = div.querySelector(
+			'button'
+		) as HTMLButtonElement;
+
+		buttonPlaysWhat.set(button, trackUrl);
+
+		yield button;
+	}
+
+	async function* yieldAlbumCovers(
+		album: Album
+	): AsyncGenerator<TemplateResult> {
+		for await (const appendPicture of album.art.covers.map(
+			(cover): Promise<HTMLPictureElement> => {
+				return picture(album, cover);
+			}
+		)) {
+			yield html`<li>${appendPicture}</li>`;
+		}
+	}
+
+	async function* yieldAlbumBackground(
+		album: Album
+	): AsyncGenerator<HTMLPictureElement> {
+		yield await picture(album, album.art.background, 'bg');
+	}
+
+	function AlbumView(album: Album): TemplateResult {
+		return html`
+			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
+			<ol class="tracks">${album.tracks.map((track) => {
+				return html`
+					<li>
+						${asyncAppend(YieldTrackPlayButton(album, track))}
+						<button
+							disabled
+						>▶</button>
+						${track.name}
+					</li>
+				`;
+			})}</ol>
+			${asyncAppend(yieldAlbumBackground(album))}
+		`;
+	}
+
+	async function AddAlbum(album: Album): Promise<TemplateResult> {
+		const view = document.createElement('main');
+
+		views.set(album, view);
+		view.classList.add('view');
+		view.addEventListener('click', (e) => {
+			if (
+				(e.target instanceof HTMLButtonElement) &&
+				buttonPlaysWhat.has(e.target)
+			) {
+				audio.pause();
+				audio.src = buttonPlaysWhat.get(e.target) + '';
+				audio.play();
+			}
+		});
+
+		render(AlbumView(album), view);
+
+		const button = html`<button
+			aria-label="View &quot;${album.name}&quot;"
+			data-name="${album.name}"
+			@click=${(): void => {
+				if (currentAlbum) {
+					document.body.removeChild(
+						views.get(currentAlbum) as HTMLElement
+					);
+				}
+				currentAlbum = album;
+				document.body.removeChild(albums);
+				document.body.appendChild(view);
+				(back as HTMLButtonElement).disabled = false;
+			}}
+		>${asyncReplace(yieldPlaceholderThenPicture(
+			'Loading...',
+			album,
+			album.art.covers[0]
+		))}</button>`;
+
+		return button;
+	}
+
+	async function* renderAlbums(): AsyncGenerator<TemplateResult> {
+		for (const albumModuleSrc of [
+			'../data/albums/OCRA-0025.js',
+			'../data/albums/OCRA-0029.js',
+		]) {
+			yield await import(albumModuleSrc).then((album) => {
+				return AddAlbum(album.default);
+			})
+		}
+	}
+
+	render(html`${asyncAppend(renderAlbums())}`, albums);
 })();

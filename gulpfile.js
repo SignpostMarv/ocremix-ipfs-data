@@ -176,6 +176,21 @@ gulp.task('sync--ipfs', () => {
 	));
 });
 
+gulp.task('sync--lit-html', () => {
+	return gulp.src('./node_modules/lit-html/**/*.*').pipe(
+		changed(
+			'./dist/lit-html/',
+			{
+				hasChanged: changed.compareContents
+			}
+		)
+	).pipe(gulp.dest(
+		'./dist/lit-html/'
+	)).pipe(gulp.dest(
+		'./src/lit-html/'
+	));
+});
+
 gulp.task('sync', () => {
 	return gulp.src('./tmp/**/*.*').pipe(
 		changed(
@@ -193,6 +208,7 @@ gulp.task('default', gulp.series(
 	gulp.parallel(
 		'html',
 		'ts',
+		'sync--lit-html',
 		'sync--ipfs'
 	),
 	gulp.parallel(

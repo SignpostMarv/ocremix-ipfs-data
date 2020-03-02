@@ -5,11 +5,17 @@
 		"declaration": true,
 		"declarationMap": true,
 		"forceConsistentCasingInFileNames": true,
+		"experimentalDecorators": true,
 		"lib": [
 			"dom",
 			"dom.iterable",
 			"esnext",
 			"webworker.importscripts",
+		],
+		"plugins": [
+			{
+				"name": "typescript-lit-html-plugin"
+			}
 		],
 		"module": "ESNext",
 		"newLine": "lf",
@@ -23,8 +29,5 @@
 		"declarationDir": "./dist/",
 		"rootDir": "./src/",
 		"target": "ESNext"
-	},
-	"include": [
-		"./src/"
-	]
+	}
 }

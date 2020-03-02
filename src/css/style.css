@@ -264,6 +264,11 @@ button
 		button
 		{
 			margin-right: 1rem ;
+
+			+ button:disabled
+			{
+				display: none ;
+			}
 		}
 	}
 

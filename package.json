@@ -23,12 +23,14 @@
 		"gulp-replace": "^1.0.0",
 		"gulp-typescript": "^6.0.0-alpha.1",
 		"ipfs": "^0.41.2",
+		"lit-html": "^1.1.2",
 		"postcss-calc": "^7.0.2",
 		"postcss-font-family-system-ui": "^4.2.0",
 		"postcss-import": "^12.0.1",
 		"postcss-nested": "^4.2.1",
 		"postcss-system-monospace": "^2.1.0",
 		"typescript": "^3.8.3",
+		"typescript-lit-html-plugin": "^0.9.0",
 		"window.ipfs-fallback": "^1.2.0"
 	},
 	"dependencies": {}
