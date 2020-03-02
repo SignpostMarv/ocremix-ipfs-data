@@ -1,28 +1,28 @@
 {
 	"compilerOptions": {
-        "allowJs": false,
-        "allowSyntheticDefaultImports": false,
-        "declaration": true,
-        "declarationMap": true,
-        "forceConsistentCasingInFileNames": true,
-        "lib": [
-            "dom",
-            "dom.iterable",
+		"allowJs": false,
+		"allowSyntheticDefaultImports": false,
+		"declaration": true,
+		"declarationMap": true,
+		"forceConsistentCasingInFileNames": true,
+		"lib": [
+			"dom",
+			"dom.iterable",
 			"esnext",
 			"webworker.importscripts",
-        ],
-        "module": "ESNext",
-        "newLine": "lf",
-        "noEmitOnError": true,
-        "noErrorTruncation": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
+		],
+		"module": "ESNext",
+		"newLine": "lf",
+		"noEmitOnError": true,
+		"noErrorTruncation": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
 		"strict": true,
 		"declarationDir": "./dist/",
 		"rootDir": "./src/",
-        "target": "ESNext"
+		"target": "ESNext"
 	},
 	"include": [
 		"./src/"
