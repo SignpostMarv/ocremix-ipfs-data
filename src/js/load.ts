@@ -1,30 +1,34 @@
 declare interface ImageSource {
-	subpath:string,
-	width:number,
-	height:number,
-	srcset:Array<{
-		subpath:string,
-		width:number,
-	}>,
-};
+	subpath: string;
+	width: number;
+	height: number;
+	srcset: Array<{
+		subpath: string;
+		width: number;
+	}>;
+}
 
-declare interface album {
+declare interface Album {
 	path: string;
 	name: string;
-	tracks: Array<track>;
+	tracks: Array<Track>;
 	art: {
-		covers: Array<ImageSource>,
-		background: ImageSource,
-	},
-};
+		covers: Array<ImageSource>;
+		background: ImageSource;
+	};
+}
 
-declare interface track {
+declare interface Track {
 	name: string;
 	subpath: string;
 	index: number;
-};
+}
 
-(async () : Promise<void> => {
+declare interface IpfsInstance {
+	cat: (cid: string) => AsyncGenerator<ArrayBuffer>;
+}
+
+(async (): Promise<void> => {
 	const preloads = {
 		'style.css': document.head.querySelector(
 			'link[rel="preload"][as="style"][href$="/css/style.css"]'
@@ -37,7 +41,7 @@ declare interface track {
 		),
 	};
 
-	const back:HTMLButtonElement|null = document.querySelector('body > header button#load-albums');
+	const back: HTMLButtonElement|null = document.querySelector('body > header button#load-albums');
 
 	if ( ! (back instanceof HTMLButtonElement)) {
 		throw new Error('Could not find back button');
@@ -49,27 +53,27 @@ declare interface track {
 		}
 	});
 
-	(<HTMLLinkElement> preloads['style.css']).rel = 'stylesheet';
+	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
 
-	const ipfs = ('Ipfs' in window) ? (<any> window).ipfs : await (
+	const ipfs: IpfsInstance = ('ipfs' in window) ? (window as (Window & typeof globalThis & {ipfs: IpfsInstance})).ipfs : await (
 		new Promise((yup) => {
 			const script = document.createElement('script');
-			script.onload = () => {
-				yup((<{create:() => object}> ((<any> window).Ipfs)).create());
+			script.onload = (): void => {
+				yup((((window as (Window & typeof globalThis & {Ipfs: object})).Ipfs) as {create: () => IpfsInstance}).create());
 			};
-			script.src = (<HTMLLinkElement> preloads.ipfs).href
+			script.src = (preloads.ipfs as HTMLLinkElement).href
 
 			document.head.appendChild(script);
 		})
 	);
 
 	const ocremix = await fetch(
-		(<HTMLLinkElement> preloads.ocremix).href
+		(preloads.ocremix as HTMLLinkElement).href
 	).then((r) => {
 		return r.json();
 	});
 
-	async function url(path:string) : Promise<string> {
+	async function url(path: string): Promise<string> {
 		if ( ! (path in ocremix)) {
 			throw new Error('path not in ipfs list: ' + path);
 		}
@@ -83,9 +87,9 @@ declare interface track {
 		}
 
 		return URL.createObjectURL(new Blob(buffs));
-	};
+	}
 
-	let current_album:album|undefined;
+	let currentAlbum: Album|undefined;
 
 	const albums = document.createElement('main');
 	albums.classList.add('albums');
@@ -99,29 +103,29 @@ declare interface track {
 
 	view.classList.add('view');
 
-	const button_plays_what:WeakMap<HTMLButtonElement, string> = new WeakMap();
+	const buttonPlaysWhat: WeakMap<HTMLButtonElement, string> = new WeakMap();
 
 	back.addEventListener('click', () => {
 		document.body.removeChild(view);
 		document.body.appendChild(albums);
 		back.disabled = true;
-		current_album = undefined;
+		currentAlbum = undefined;
 	});
 
 	view.addEventListener('click', (e) => {
 		if (
 			(e.target instanceof HTMLButtonElement) &&
-			button_plays_what.has(e.target)
+			buttonPlaysWhat.has(e.target)
 		) {
 			audio.pause();
-			audio.src = button_plays_what.get(e.target) + '';
+			audio.src = buttonPlaysWhat.get(e.target) + '';
 			audio.play();
 		}
 	});
 
 	document.body.appendChild(audio);
 
-	const zelda25:album = {
+	const zelda25: Album = {
 		path: '/Albums/25YEARLEGEND - A Legend of Zelda Indie Game Composer Tribute',
 		name: '25YEARLEGEND - A Legend of Zelda Indie Game Composer Tribute',
 		art: {
@@ -249,7 +253,7 @@ declare interface track {
 		],
 	};
 
-	const sonic1:album = {
+	const sonic1: Album = {
 		path: '/Albums/Sonic the Hedgehog - The Sound of Speed',
 		name: 'Sonic the Hedgehog - The Sound of Speed',
 		art: {
@@ -349,15 +353,15 @@ declare interface track {
 	};
 
 	async function picture(
-		album:album,
-		art:ImageSource
-	) : Promise<HTMLPictureElement> {
+		album: Album,
+		art: ImageSource
+	): Promise<HTMLPictureElement> {
 		const src = await url(album.path + art.subpath);
 		const srcset = Promise.all(art.srcset.map(
-			async (srcset) : Promise<string> => {
-				const srcset_src = await url(album.path + srcset.subpath);
+			async (srcset): Promise<string> => {
+				const srcsetSrc = await url(album.path + srcset.subpath);
 
-				return srcset_src + ' ' + srcset.width.toString(10);
+				return srcsetSrc + ' ' + srcset.width.toString(10);
 			}
 		));
 		(await srcset).push(src + ' ' + art.width.toString(10));
@@ -374,21 +378,21 @@ declare interface track {
 		return picture;
 	}
 
-	async function add_album(album:album) {
+	async function AddAlbum(album: Album): Promise<void> {
 		const button = document.createElement('button');
 		button.setAttribute('aria-label', `View &quot;${album.name}&quot;`);
 		button.setAttribute('data-name', album.name);
 
 		albums.appendChild(button);
 
-		picture(album, album.art.covers[0]).then((append_picture) => {
-			button.appendChild(append_picture);
+		picture(album, album.art.covers[0]).then((appendPicture) => {
+			button.appendChild(appendPicture);
 		});
 
 		button.addEventListener(
 			'click',
 			() => {
-				current_album = album;
+				currentAlbum = album;
 				document.body.removeChild(albums);
 
 				const covers = document.createElement('ol');
@@ -413,8 +417,8 @@ declare interface track {
 
 					tracks.appendChild(li);
 
-					url(album.path + track.subpath).then((url:string) => {
-						button_plays_what.set(button, url);
+					url(album.path + track.subpath).then((url: string) => {
+						buttonPlaysWhat.set(button, url);
 						button.disabled = false;
 					});
 				});
@@ -424,22 +428,22 @@ declare interface track {
 				view.appendChild(covers);
 				view.appendChild(tracks);
 
-				picture(album, album.art.background).then((append_picture) => {
-					if (current_album === album) {
-						append_picture.classList.add('bg');
-						view.appendChild(append_picture);
+				picture(album, album.art.background).then((appendPicture) => {
+					if (currentAlbum === album) {
+						appendPicture.classList.add('bg');
+						view.appendChild(appendPicture);
 					}
 				});
 
 				Promise.all(album.art.covers.map(
-					(cover) : Promise<HTMLPictureElement> => {
+					(cover): Promise<HTMLPictureElement> => {
 						return picture(album, cover);
 					}
 				)).then((pictures) => {
-					if (current_album === album) {
-						pictures.forEach((append_picture) => {
+					if (currentAlbum === album) {
+						pictures.forEach((appendPicture) => {
 							const li = document.createElement('li');
-							li.appendChild(append_picture);
+							li.appendChild(appendPicture);
 
 							covers.appendChild(li);
 						});
@@ -447,11 +451,11 @@ declare interface track {
 				});
 
 				document.body.appendChild(view);
-				(<HTMLButtonElement> back).disabled = false;
+				(back as HTMLButtonElement).disabled = false;
 			}
 		);
 	}
 
-	add_album(zelda25);
-	add_album(sonic1);
+	AddAlbum(zelda25);
+	AddAlbum(sonic1);
 })();

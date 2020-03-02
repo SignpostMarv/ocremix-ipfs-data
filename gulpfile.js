@@ -7,6 +7,7 @@ const purgecss = require('gulp-purgecss');
 const typescript = require('gulp-typescript');
 const replace = require('gulp-replace');
 const rename = require('gulp-rename');
+const eslint = require('gulp-eslint');
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -142,6 +143,14 @@ gulp.task('html', () => {
 gulp.task('ts', () => {
 	return gulp.src(
 		'./src/js/**/*.ts'
+	).pipe(
+		eslint({
+			configFile: './.eslint.js',
+		})
+	).pipe(
+		eslint.format()
+	).pipe(
+		eslint.failAfterError()
 	).pipe(newer({
 		dest: './tmp/js/',
 		ext: '.js',
