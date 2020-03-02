@@ -127,3 +127,5 @@ export const OCRA0029: Album = {
 		},
 	],
 };
+
+export default OCRA0029;

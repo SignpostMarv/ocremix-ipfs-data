@@ -101,10 +101,6 @@ import {
 
 	document.body.appendChild(audio);
 
-	const {OCRA0029: zelda25} = (await import('../data/albums/OCRA-0029.js'));
-
-	const {OCRA0025: sonic1} = (await import('../data/albums/OCRA-0025.js'));
-
 	async function picture(
 		album: Album,
 		art: ImageSource
@@ -209,6 +205,12 @@ import {
 		);
 	}
 
-	AddAlbum(zelda25);
-	AddAlbum(sonic1);
+	[
+		'../data/albums/OCRA-0025.js',
+		'../data/albums/OCRA-0029.js',
+	].forEach((albumModuleSrc) => {
+		import(albumModuleSrc).then((album) => {
+			AddAlbum(album.default);
+		})
+	});
 })();
