@@ -106,21 +106,26 @@ import {
 		art: ImageSource
 	): Promise<HTMLPictureElement> {
 		const src = await url(album.path + art.subpath);
-		const srcset = Promise.all(art.srcset.map(
+		const srcset = await Promise.all(art.srcset.map(
 			async (srcset): Promise<string> => {
 				const srcsetSrc = await url(album.path + srcset.subpath);
 
-				return srcsetSrc + ' ' + srcset.width.toString(10);
+				return srcsetSrc + ' ' + srcset.width.toString(10) + 'w';
 			}
 		));
-		(await srcset).push(src + ' ' + art.width.toString(10));
+
+		if (srcset.length > 0) {
+			srcset.push(src + ' ' + art.width.toString(10) + 'w');
+		}
 
 		const picture = document.createElement('picture');
 		const img = new Image();
 		img.src = src;
 		img.width = art.width;
 		img.height = art.height;
-		img.srcset = (await srcset).join(', ');
+		if (srcset.length > 0) {
+			img.srcset = srcset.join(', ');
+		}
 
 		picture.appendChild(img);
 
