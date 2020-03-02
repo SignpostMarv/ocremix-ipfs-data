@@ -1,4 +1,6 @@
-export default {
+import { Album } from '../../module';
+
+export const OCRA0029: Album = {
 	path: '/Albums/25YEARLEGEND - A Legend of Zelda Indie Game Composer Tribute',
 	name: '25YEARLEGEND - A Legend of Zelda Indie Game Composer Tribute',
 	art: {

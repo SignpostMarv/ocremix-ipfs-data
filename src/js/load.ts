@@ -1,32 +1,8 @@
-declare interface ImageSource {
-	subpath: string;
-	width: number;
-	height: number;
-	srcset: Array<{
-		subpath: string;
-		width: number;
-	}>;
-}
-
-declare interface Album {
-	path: string;
-	name: string;
-	tracks: Array<Track>;
-	art: {
-		covers: Array<ImageSource>;
-		background: ImageSource;
-	};
-}
-
-declare interface Track {
-	name: string;
-	subpath: string;
-	index: number;
-}
-
-declare interface IpfsInstance {
-	cat: (cid: string) => AsyncGenerator<ArrayBuffer>;
-}
+import {
+	ImageSource,
+	Album,
+	IpfsInstance,
+} from '../module';
 
 (async (): Promise<void> => {
 	const preloads = {
@@ -125,9 +101,9 @@ declare interface IpfsInstance {
 
 	document.body.appendChild(audio);
 
-	const zelda25: Album = (await import('../data/albums/OCRA-0029.js')).default;
+	const {OCRA0029: zelda25} = (await import('../data/albums/OCRA-0029.js'));
 
-	const sonic1: Album = (await import('../data/albums/OCRA-0025.js')).default;
+	const {OCRA0025: sonic1} = (await import('../data/albums/OCRA-0025.js'));
 
 	async function picture(
 		album: Album,

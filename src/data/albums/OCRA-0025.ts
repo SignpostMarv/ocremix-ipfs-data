@@ -1,4 +1,6 @@
-export default {
+import { Album } from '../../module';
+
+export const OCRA0025: Album = {
 	path: '/Albums/Sonic the Hedgehog - The Sound of Speed',
 	name: 'Sonic the Hedgehog - The Sound of Speed',
 	art: {
@@ -95,4 +97,4 @@ export default {
 			index: 13,
 		},
 	],
-}
+};
