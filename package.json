@@ -1,7 +1,7 @@
 {
 	"name": "ocremix-ipfs",
 	"version": "0.0.0",
-	"description": "Portal to accessing OCRemix content via IPFS",
+	"description": "Portal to accessing OC ReMix content via IPFS",
 	"author": "SignpostMarv",
 	"license": "Apache-2.0",
 	"devDependencies": {
