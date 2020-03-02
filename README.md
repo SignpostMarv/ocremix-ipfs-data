@@ -6,8 +6,9 @@
 3) `gulp`
 
 ## Browse
-Use any http server of your choice.
+Use any http server of your choice, open in a recent/modern browser.
 
+![animated demo of proof-of-concept for using IPFS to browse & stream OC ReMix albums.](./img/ocremix-ipfs-demo.gif)
 
 
 ## Optional Steps
