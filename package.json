@@ -5,11 +5,8 @@
 	"author": "SignpostMarv",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@babel/core": "^7.8.6",
 		"@typescript-eslint/eslint-plugin": "^2.22.0",
 		"@typescript-eslint/parser": "^2.22.0",
-		"babel-plugin-transform-commonjs-es2015-modules": "^4.0.1",
-		"cli-progress": "^3.6.0",
 		"cssnano": "^4.1.10",
 		"eslint": "^6.8.0",
 		"gulp": "^4.0.2",
@@ -31,8 +28,7 @@
 		"postcss-nested": "^4.2.1",
 		"postcss-system-monospace": "^2.1.0",
 		"typescript": "^3.8.3",
-		"typescript-lit-html-plugin": "^0.9.0",
-		"window.ipfs-fallback": "^1.2.0"
+		"typescript-lit-html-plugin": "^0.9.0"
 	},
 	"dependencies": {}
 }
