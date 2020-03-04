@@ -38,7 +38,28 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
 
-	const ipfs: IpfsInstance = ('ipfs' in window) ? (window as (Window & typeof globalThis & {ipfs: IpfsInstance})).ipfs : await (
+	async function GetIpfsInstance(): Promise<IpfsInstance> {
+		try {
+			if ('ipfs' in window) {
+				throw new Error(
+					'https://github.com/ipfs-shipyard/ipfs-companion/issues/852'
+				);
+				/*
+				return await (
+					window as (
+						Window &
+						typeof globalThis &
+						{ipfs: {enable: () => Promise<IpfsInstance>}}
+					)
+				).ipfs.enable();
+				*/
+			}
+
+			throw new Error('window.ipfs not available');
+		} catch (err) {
+			console.error(err);
+
+			return await (
 		new Promise((yup) => {
 			const script = document.createElement('script');
 			script.onload = (): void => {
@@ -48,7 +69,11 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 			document.head.appendChild(script);
 		})
-	);
+			);
+		}
+	}
+
+	const ipfs = await GetIpfsInstance();
 
 	const ocremix = await fetch(
 		(preloads.ocremix as HTMLLinkElement).href
