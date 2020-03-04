@@ -25,5 +25,5 @@ export interface Track {
 }
 
 export interface IpfsInstance {
-	cat: (cid: string) => AsyncGenerator<ArrayBuffer>;
+	cat: (cid: string) => AsyncGenerator<Uint8Array>;
 }
