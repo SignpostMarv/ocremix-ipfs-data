@@ -38,14 +38,20 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
 
-	async function GetIpfsInstance(): Promise<IpfsInstance> {
+	let _ipfs: Promise<IpfsInstance>|undefined;
+
+	function GetIpfsInstance(): Promise<IpfsInstance> {
+		if (_ipfs) {
+			return _ipfs;
+		}
+
 		try {
 			if ('ipfs' in window) {
 				throw new Error(
 					'https://github.com/ipfs-shipyard/ipfs-companion/issues/852'
 				);
 				/*
-				return await (
+				_ipfs = (
 					window as (
 						Window &
 						typeof globalThis &
@@ -59,7 +65,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 		} catch (err) {
 			console.error(err);
 
-			return await new Promise((yup) => {
+			_ipfs = new Promise((yup) => {
 				const script = document.createElement('script');
 				script.onload = (): void => {
 					yup(((window as (
@@ -73,9 +79,9 @@ import { TemplateResult } from '../lit-html/lit-html';
 				document.head.appendChild(script);
 			});
 		}
-	}
 
-	const ipfs = await GetIpfsInstance();
+		return _ipfs;
+	}
 
 	const ocremix = await fetch(
 		(preloads.ocremix as HTMLLinkElement).href
@@ -88,7 +94,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 			throw new Error('path not in ipfs list: ' + path);
 		}
 
-		const cat = await ipfs.cat(ocremix[path]);
+		const cat = await (await GetIpfsInstance()).cat(ocremix[path]);
 
 		const buffs = [];
 
