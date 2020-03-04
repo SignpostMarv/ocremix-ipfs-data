@@ -59,17 +59,19 @@ import { TemplateResult } from '../lit-html/lit-html';
 		} catch (err) {
 			console.error(err);
 
-			return await (
-		new Promise((yup) => {
-			const script = document.createElement('script');
-			script.onload = (): void => {
-				yup((((window as (Window & typeof globalThis & {Ipfs: object})).Ipfs) as {create: () => IpfsInstance}).create());
-			};
-			script.src = (preloads.ipfs as HTMLLinkElement).href
+			return await new Promise((yup) => {
+				const script = document.createElement('script');
+				script.onload = (): void => {
+					yup(((window as (
+						Window &
+						typeof globalThis &
+						{Ipfs: {create: () => IpfsInstance}}
+					)).Ipfs).create());
+				};
+				script.src = (preloads.ipfs as HTMLLinkElement).href
 
-			document.head.appendChild(script);
-		})
-			);
+				document.head.appendChild(script);
+			});
 		}
 	}
 
