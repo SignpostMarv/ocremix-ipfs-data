@@ -309,8 +309,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 			}
 		});
 
-		render(AlbumView(album), view);
-
 		const button = html`<button
 			aria-label="View &quot;${album.name}&quot;"
 			data-name="${album.name}"
@@ -322,6 +320,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 				}
 				currentAlbum = album;
 				document.body.removeChild(albums);
+				render(AlbumView(album), view);
 				document.body.appendChild(view);
 				(back as HTMLButtonElement).disabled = false;
 			}}
