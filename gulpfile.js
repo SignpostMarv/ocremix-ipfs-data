@@ -8,6 +8,7 @@ const typescript = require('gulp-typescript');
 const replace = require('gulp-replace');
 const rename = require('gulp-rename');
 const eslint = require('gulp-eslint');
+const filter = require('gulp-filter');
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -144,6 +145,11 @@ gulp.task('ts', () => {
 	return gulp.src(
 		'./src/{js,data}/**/*.ts'
 	).pipe(
+		filter([
+			'**',
+			'!**/*.worker.ts',
+		])
+	).pipe(
 		eslint({
 			configFile: './.eslint.js',
 		})
@@ -156,6 +162,29 @@ gulp.task('ts', () => {
 		ext: '.js',
 	})).pipe(
 		typescript.createProject('./tsconfig.json')()
+	).pipe(
+		replace(/\ {4}/g, '\t')
+	).pipe(gulp.dest(
+		'./tmp/'
+	));
+});
+
+gulp.task('ts--workers', () => {
+	return gulp.src(
+		'./src/{js,data}/**/*.worker.ts'
+	).pipe(
+		eslint({
+			configFile: './.eslint.js',
+		})
+	).pipe(
+		eslint.format()
+	).pipe(
+		eslint.failAfterError()
+	).pipe(newer({
+		dest: './tmp/',
+		ext: '.js',
+	})).pipe(
+		typescript.createProject('./tsconfig.workers.json')()
 	).pipe(
 		replace(/\ {4}/g, '\t')
 	).pipe(gulp.dest(
@@ -208,6 +237,7 @@ gulp.task('default', gulp.series(
 	gulp.parallel(
 		'html',
 		'ts',
+		'ts--workers',
 		'sync--lit-html',
 		'sync--ipfs'
 	),
