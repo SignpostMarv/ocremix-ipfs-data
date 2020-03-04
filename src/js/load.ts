@@ -3,6 +3,8 @@ import {
 	Album,
 	Track,
 	IpfsInstance,
+	SupportedExtensionLower,
+	SupportedExtensionUpperOrLower,
 } from '../module';
 import { TemplateResult } from '../lit-html/lit-html';
 
@@ -89,9 +91,56 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return r.json();
 	});
 
-	async function url(path: string): Promise<string> {
+	function mimeType(ext: SupportedExtensionLower): string
+	{
+		switch (ext) {
+			case 'mp3':
+				return 'audio/mpeg';
+			case 'png':
+				return 'image/png';
+			case 'jpeg':
+			case 'jpg':
+				return 'image/jpeg';
+		}
+	}
+
+	async function blob(path: string, skipCache = false): Promise<Blob> {
 		if ( ! (path in ocremix)) {
 			throw new Error('path not in ipfs list: ' + path);
+		}
+
+		const match = /.(mp3|png|jpe?g)$/i.exec(path);
+
+		if ( ! match) {
+			throw new Error('Unsupported file type requested!');
+		}
+
+		const [, EXT] = match;
+
+		const ext = (
+			(
+				EXT as SupportedExtensionUpperOrLower
+			).toLowerCase() as SupportedExtensionLower
+		);
+
+		if ('caches' in window && ! skipCache) {
+			const cache = await caches.open('ocremix-ipfs-by-cid');
+			const url = '/' + ocremix[path];
+			const faux = new Request(url);
+
+			const maybe: Response|undefined = await cache.match(faux);
+
+			console.log(maybe);
+
+			if ( ! maybe) {
+				const cacheBlob = await blob(path, true);
+
+				await cache.put(url, new Response(cacheBlob));
+
+				return cacheBlob;
+			} else {
+				return await maybe.blob();
+			}
 		}
 
 		const cat = await (await GetIpfsInstance()).cat(ocremix[path]);
@@ -102,7 +151,11 @@ import { TemplateResult } from '../lit-html/lit-html';
 			buffs.push(buff);
 		}
 
-		return URL.createObjectURL(new Blob(buffs));
+		return new Blob(buffs, {type: mimeType(ext)});
+	}
+
+	async function url(path: string): Promise<string> {
+		return URL.createObjectURL(await blob(path));
 	}
 
 	let currentAlbum: Album|undefined;
