@@ -125,7 +125,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 		if ('caches' in window && ! skipCache) {
 			const cache = await caches.open('ocremix-ipfs-by-cid');
-			const url = '/' + ocremix[path];
+			const url = '/ipfs/' + ocremix[path];
 			const faux = new Request(url);
 
 			const maybe: Response|undefined = await cache.match(faux);
