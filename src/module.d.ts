@@ -24,6 +24,10 @@ export interface Track {
 	index: number;
 }
 
+export interface IpfsGlobal {
+	create: () => Promise<IpfsInstance>;
+}
+
 export interface IpfsInstance {
 	cat: (cid: string) => AsyncGenerator<Uint8Array>;
 }

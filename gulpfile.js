@@ -9,6 +9,8 @@ const replace = require('gulp-replace');
 const rename = require('gulp-rename');
 const eslint = require('gulp-eslint');
 const filter = require('gulp-filter');
+const sourcemaps = require('gulp-sourcemaps');
+const uglify = require('gulp-uglify-es').default;
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -205,6 +207,59 @@ gulp.task('sync--ipfs', () => {
 	));
 });
 
+gulp.task('sync--ipfs--build-module', () => {
+	return gulp.src('./node_modules/ipfs/dist/index.js').pipe(
+		sourcemaps.init({loadMaps: true})
+	).pipe(
+		replace(
+			'(function webpackUniversalModuleDefinition(root, factory) {',
+			(
+				'const notWindow = {};' +
+				'\n' +
+				'(function webpackUniversalModuleDefinition(root, factory) {'
+			)
+		)
+	).pipe(
+		replace(
+			'})(window, function() {',
+			'})(notWindow, function() {'
+		)
+	).pipe(
+		replace(
+			(
+				'/******/ ]);' +
+				'\n' +
+				'});'
+			),
+			(
+				'/******/ ]);' +
+				'\n' +
+				'});' +
+				'\n' +
+				'export const Ipfs = notWindow[\'Ipfs\'];' +
+				'\n' +
+				'export default notWindow[\'Ipfs\'];'
+			)
+		)
+	).pipe(
+		rename('index.module.js')
+	).pipe(
+		sourcemaps.write('./')
+	).pipe(
+		gulp.dest('./dist/ipfs/')
+	)
+});
+
+gulp.task('sync--ipfs--minify-module', () => {
+	return gulp.src('./dist/ipfs/index.module.js').pipe(
+		sourcemaps.init({loadMaps:true})
+	).pipe(
+		rename('index.module.min.js')
+	).pipe(uglify()).pipe(sourcemaps.write('./')).pipe(
+		gulp.dest('./dist/ipfs/')
+	);
+});
+
 gulp.task('sync--lit-html', () => {
 	return gulp.src('./node_modules/lit-html/**/*.*').pipe(
 		changed(
@@ -239,9 +294,11 @@ gulp.task('default', gulp.series(
 		'ts',
 		'ts--workers',
 		'sync--lit-html',
-		'sync--ipfs'
+		'sync--ipfs',
+		'sync--ipfs--build-module'
 	),
 	gulp.parallel(
+		'sync--ipfs--minify-module',
 		'css--first-load',
 		'css--style'
 	),

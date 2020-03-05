@@ -5,6 +5,7 @@ import {
 	IpfsInstance,
 	SupportedExtensionLower,
 	SupportedExtensionUpperOrLower,
+	IpfsGlobal,
 } from '../module';
 import { TemplateResult } from '../lit-html/lit-html';
 
@@ -19,7 +20,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 			'link[rel="preload"][as="style"][href$="/css/style.css"]'
 		),
 		'ipfs': document.head.querySelector(
-			'link[rel="preload"][as="script"][href$="/ipfs/index.min.js"]'
+			'link[rel="modulepreload"][href$="/ipfs/index.module.min.js"]'
 		),
 		'ocremix' : document.head.querySelector(
 			'link[rel="preload"][as="fetch"][href$="/data/ocremix-cids.json"]'
@@ -67,18 +68,12 @@ import { TemplateResult } from '../lit-html/lit-html';
 		} catch (err) {
 			console.error(err);
 
-			_ipfs = new Promise((yup) => {
-				const script = document.createElement('script');
-				script.onload = (): void => {
-					yup(((window as (
-						Window &
-						typeof globalThis &
-						{Ipfs: {create: () => IpfsInstance}}
-					)).Ipfs).create());
-				};
-				script.src = (preloads.ipfs as HTMLLinkElement).href
-
-				document.head.appendChild(script);
+			_ipfs = new Promise((yup): void => {
+				(async (src): Promise<void> => {
+					yup (
+						await ((await import(src)).Ipfs as IpfsGlobal).create()
+					);
+				})((preloads.ipfs as HTMLLinkElement).href);
 			});
 		}
 
