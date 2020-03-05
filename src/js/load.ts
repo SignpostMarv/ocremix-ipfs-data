@@ -278,6 +278,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 					<li>
 						${asyncAppend(YieldTrackPlayButton(album, track))}
 						<button
+							type="button"
 							disabled
 						>▶</button>
 						${track.name}
