@@ -105,6 +105,8 @@ gulp.task('css--style', () => {
 	return gulp.src(
 		'./src/css/style.css'
 	).pipe(
+		newer('./tmp/css/')
+	).pipe(
 		postcss_config()
 	).pipe(gulp.dest(
 		'./tmp/css/'
@@ -114,6 +116,8 @@ gulp.task('css--style', () => {
 gulp.task('css--first-load', () => {
 	return gulp.src(
 		'./src/css/style.css'
+	).pipe(
+		newer('./tmp/css/')
 	).pipe(
 		postcss_config()
 	).pipe(purgecss({
