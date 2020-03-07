@@ -156,6 +156,8 @@ gulp.task('ts', () => {
 			'!**/*.worker.ts',
 		])
 	).pipe(
+		sourcemaps.init()
+	).pipe(
 		eslint({
 			configFile: './.eslint.js',
 		})
@@ -170,6 +172,8 @@ gulp.task('ts', () => {
 		typescript.createProject('./tsconfig.json')()
 	).pipe(
 		replace(/\ {4}/g, '\t')
+	).pipe(
+		sourcemaps.write('./')
 	).pipe(gulp.dest(
 		'./tmp/'
 	));
@@ -178,6 +182,8 @@ gulp.task('ts', () => {
 gulp.task('ts--workers', () => {
 	return gulp.src(
 		'./src/{js,data}/**/*.worker.ts'
+	).pipe(
+		sourcemaps.init()
 	).pipe(
 		eslint({
 			configFile: './.eslint.js',
@@ -193,6 +199,8 @@ gulp.task('ts--workers', () => {
 		typescript.createProject('./tsconfig.workers.json')()
 	).pipe(
 		replace(/\ {4}/g, '\t')
+	).pipe(
+		sourcemaps.write('./')
 	).pipe(gulp.dest(
 		'./tmp/'
 	));
@@ -284,7 +292,10 @@ gulp.task('sync--lit-html', () => {
 });
 
 gulp.task('sync', () => {
-	return gulp.src('./tmp/**/*.*').pipe(
+	return gulp.src([
+		'./tmp/{css/*.*,*.html,data/*.json,{js,data}/**/*.d.ts}',
+		'./src/module.d.ts',
+	]).pipe(
 		changed(
 			'./dist/',
 			{
@@ -310,5 +321,8 @@ gulp.task('default', gulp.series(
 		'css--first-load',
 		'css--style'
 	),
-	'sync'
+	gulp.parallel(
+		'sync',
+		'uglify'
+	)
 ));
