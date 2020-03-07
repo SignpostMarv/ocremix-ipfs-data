@@ -215,6 +215,10 @@ gulp.task('sync--ipfs--build-module', () => {
 	return gulp.src('./node_modules/ipfs/dist/index.js').pipe(
 		sourcemaps.init({loadMaps: true})
 	).pipe(
+		rename('index.module.js')
+	).pipe(
+		newer('./dist/ipfs/')
+	).pipe(
 		replace(
 			'(function webpackUniversalModuleDefinition(root, factory) {',
 			(
@@ -246,8 +250,6 @@ gulp.task('sync--ipfs--build-module', () => {
 			)
 		)
 	).pipe(
-		rename('index.module.js')
-	).pipe(
 		sourcemaps.write('./')
 	).pipe(
 		gulp.dest('./dist/ipfs/')
@@ -259,6 +261,8 @@ gulp.task('sync--ipfs--minify-module', () => {
 		sourcemaps.init({loadMaps:true})
 	).pipe(
 		rename('index.module.min.js')
+	).pipe(
+		newer('./dist/ipfs/')
 	).pipe(uglify()).pipe(sourcemaps.write('./')).pipe(
 		gulp.dest('./dist/ipfs/')
 	);
