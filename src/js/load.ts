@@ -13,9 +13,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const {html, render} = await import('../lit-html/lit-html.js');
 	const {asyncAppend} = await import('../lit-html/directives/async-append.js');
 	const {asyncReplace} = await import('../lit-html/directives/async-replace.js');
-	/*
-	const buttonPlaysWhat: WeakMap<HTMLButtonElement, string> = new WeakMap();
-	*/
 
 	const preloads = {
 		'style.css': document.head.querySelector(
@@ -271,38 +268,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 		yield await picture(album, art);
 	}
 
-	/*
-	async function* YieldTrackPlayButton(
-		album: Album,
-		track: Track
-	): AsyncGenerator<HTMLButtonElement> {
-		const div = document.createElement('div');
-
-		const trackUrl = await url(
-			album.path +
-			track.subpath
-		);
-
-		render(
-			html`
-				<button
-					aria-label="Play ${track.name}"
-					album=${album} track=${track}
-				>▶</button>
-			`,
-			div
-		);
-
-		const button = div.querySelector(
-			'button'
-		) as HTMLButtonElement;
-
-		buttonPlaysWhat.set(button, trackUrl);
-
-		yield button;
-	}
-	*/
-
 	async function* yieldAlbumCovers(
 		album: Album
 	): AsyncGenerator<TemplateResult> {
@@ -373,16 +338,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 		views.set(album, view);
 		view.classList.add('view');
-		/*
-		view.addEventListener('click', (e) => {
-			if (
-				(e.target instanceof HTMLButtonElement) &&
-				buttonPlaysWhat.has(e.target)
-			) {
-				play(buttonPlaysWhat.get(e.target) + '');
-			}
-		});
-		*/
 
 		const button = html`<button
 			aria-label="View &quot;${album.name}&quot;"
