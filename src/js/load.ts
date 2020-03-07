@@ -8,6 +8,10 @@ import {
 import { TemplateResult } from '../lit-html/lit-html';
 
 (async (): Promise<void> => {
+	let currentAlbum: Album|undefined;
+	let currentTrack: Track|undefined;
+	let trackMostRecentlyAttemptedToPlay: string|undefined;
+
 	const [
 		{html, render},
 		{asyncAppend},
@@ -44,11 +48,12 @@ import { TemplateResult } from '../lit-html/lit-html';
 		audio.controls = true;
 		audio.src=  '';
 
+		audio.addEventListener('ended', () => {
+			currentTrack = undefined;
+		});
+
 		return audio;
 	})();
-
-	let currentAlbum: Album|undefined;
-	let trackMostRecentlyAttemptedToPlay: string|undefined;
 
 	if ( ! (back instanceof HTMLButtonElement)) {
 		throw new Error('Could not find back button');
@@ -164,8 +169,11 @@ import { TemplateResult } from '../lit-html/lit-html';
 	}
 
 	function play(src: string): void {
+		console.log(src);
+		if (audio.src !== src) {
 		audio.pause();
 		audio.src = src;
+		}
 		audio.play();
 	}
 
@@ -252,28 +260,41 @@ import { TemplateResult } from '../lit-html/lit-html';
 			<ol class="tracks">${album.tracks.map((track) => {
 				const cid = albumTrackCID(album, track);
 				const path = album.path + track.subpath;
+				let trackUrl: string|undefined;
 
 				return html`
 					<li>
 						<button
 							type="button"
-							aria-label="Play ${track.name}"
+							aria-label="Play or Pause ${track.name}"
 							@click=${async (e: Event): Promise<void> => {
 								const button = e.target as HTMLButtonElement;
+
+								if (currentTrack === track) {
+									audio.pause();
+									button.textContent = '⏯';
+									currentTrack = undefined;
+
+									return;
+								}
+
 								button.disabled = true;
 								button.textContent = '⏳';
 								trackMostRecentlyAttemptedToPlay = cid;
 
-								const trackUrl = await url(path);
+								if ( ! trackUrl) {
+									trackUrl = await url(path);
+								}
 
 								button.disabled = false;
-								button.textContent = '▶';
+								button.textContent = '⏯';
 
 								if (cid === trackMostRecentlyAttemptedToPlay) {
+									currentTrack = track;
 									play(trackUrl);
 								}
 							}}
-						>▶</button>
+						>⏯</button>
 						${track.name}
 					</li>
 				`;
