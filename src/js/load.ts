@@ -4,6 +4,7 @@ import {
 	Track,
 	SupportedExtensionLower,
 	SupportedExtensionUpperOrLower,
+	SrcsetSource,
 } from '../module';
 import { TemplateResult } from '../lit-html/lit-html';
 
@@ -42,6 +43,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const blobs: {[key: string]: Promise<Blob>} = {};
 	const albums = document.createElement('main');
 	const views: WeakMap<Album, HTMLElement> = new WeakMap();
+	const urls: WeakMap<Track|SrcsetSource, Promise<string>> = new WeakMap();
 	const audio = ((): HTMLAudioElement => {
 		const audio = document.createElement('audio');
 
@@ -168,6 +170,14 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return URL.createObjectURL(await blob(path));
 	}
 
+	async function urlForThing(thing: Track|SrcsetSource, path: string): Promise<string> {
+		if ( ! urls.has(thing)) {
+			urls.set(thing, url(path));
+		}
+
+		return await (urls.get(thing) as Promise<string>);
+	}
+
 	function play(src: string): void {
 		console.log(src);
 		if (audio.src !== src) {
@@ -197,10 +207,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 		art: ImageSource,
 		className = ''
 	): Promise<HTMLPictureElement> {
-		const src = await url(album.path + art.subpath);
+		const src = await urlForThing(art, album.path + art.subpath);
 		const srcset = await Promise.all(art.srcset.map(
 			async (srcset): Promise<string> => {
-				const srcsetSrc = await url(album.path + srcset.subpath);
+				const srcsetSrc = await urlForThing(
+					srcset,
+					album.path + srcset.subpath
+				);
 
 				return srcsetSrc + ' ' + srcset.width.toString(10) + 'w';
 			}
@@ -260,7 +273,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 			<ol class="tracks">${album.tracks.map((track) => {
 				const cid = albumTrackCID(album, track);
 				const path = album.path + track.subpath;
-				let trackUrl: string|undefined;
 
 				return html`
 					<li>
@@ -282,9 +294,10 @@ import { TemplateResult } from '../lit-html/lit-html';
 								button.textContent = '⏳';
 								trackMostRecentlyAttemptedToPlay = cid;
 
-								if ( ! trackUrl) {
-									trackUrl = await url(path);
-								}
+								const trackUrl = await urlForThing(
+									track,
+									path
+								);
 
 								button.disabled = false;
 								button.textContent = '⏯';

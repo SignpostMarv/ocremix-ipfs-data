@@ -1,11 +1,11 @@
-export interface ImageSource {
+export interface SrcsetSource {
 	subpath: string;
 	width: number;
+}
+
+export interface ImageSource extends SrcsetSource {
 	height: number;
-	srcset: Array<{
-		subpath: string;
-		width: number;
-	}>;
+	srcset: Array<SrcsetSource>;
 }
 
 export interface Album {
