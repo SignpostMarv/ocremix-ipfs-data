@@ -171,8 +171,8 @@ import { TemplateResult } from '../lit-html/lit-html';
 	function play(src: string): void {
 		console.log(src);
 		if (audio.src !== src) {
-		audio.pause();
-		audio.src = src;
+			audio.pause();
+			audio.src = src;
 		}
 		audio.play();
 	}
