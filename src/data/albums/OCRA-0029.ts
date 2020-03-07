@@ -34,7 +34,8 @@ export const OCRA0029: Album = {
 			]
 		}
 	},
-	tracks: [
+	discs: {
+		'': [
 		{
 			subpath: '/MP3/01 Disasterpeace - Chamber of the Goddess [A Link to the Past].mp3',
 			name: '01 Disasterpeace - Chamber of the Goddess [A Link to the Past]',
@@ -126,6 +127,7 @@ export const OCRA0029: Album = {
 			index: 18,
 		},
 	],
+	},
 };
 
 export default OCRA0029;

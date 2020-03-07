@@ -30,7 +30,8 @@ export const OCRA0025: Album = {
 			srcset: [],
 		},
 	},
-	tracks: [
+	discs: {
+		'': [
 		{
 			subpath: '/MP3/01 A, B, C, Start!.mp3',
 			name: 'A, B, C, Start!',
@@ -97,6 +98,7 @@ export const OCRA0025: Album = {
 			index: 13,
 		},
 	],
+	},
 };
 
 export default OCRA0025;

@@ -102,6 +102,7 @@ h6
 }
 
 header,
+.view > dl,
 .view > ol
 {
 	z-index: 2 ;
@@ -219,11 +220,16 @@ button
 		flex-direction: row ;
 	}
 
+	> .covers,
+	> .discs
+	{
+		flex: 1 1 ;
+		position: relative ;
+	}
+
 	ol
 	{
 		list-style: inside none ;
-		position: relative ;
-		flex: 1 1 ;
 
 		:not(:first-child)
 		{
@@ -263,12 +269,15 @@ button
 		}
 	}
 
+	.discs,
 	.tracks
 	{
 		padding: .5rem ;
+	}
 
-		li
-		{
+	.discs dt,
+	.tracks li
+	{
 			padding: .25rem ;
 			background: rgba(255, 255, 255, .5) ;
 			color: #000 ;
@@ -278,8 +287,18 @@ button
 				background: rgba(0, 0, 0, .5) ;
 				color: #fff ;
 			}
-		}
+	}
 
+	.discs
+	{
+		dd + dt
+		{
+			margin-top: 1rem ;
+		}
+	}
+
+	.tracks
+	{
 		button
 		{
 			margin-right: 1rem ;

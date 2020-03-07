@@ -8,10 +8,12 @@ export interface ImageSource extends SrcsetSource {
 	srcset: Array<SrcsetSource>;
 }
 
+export interface Discs {[name: string]: Array<Track>}
+
 export interface Album {
 	path: string;
 	name: string;
-	tracks: Array<Track>;
+	discs: Discs;
 	art: {
 		covers: Array<ImageSource>;
 		background: ImageSource;

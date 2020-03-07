@@ -159,7 +159,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 	function AlbumView(album: Album): TemplateResult {
 		return html`
 			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
-			<ol class="tracks">${album.tracks.map((track) => {
+			<dl class="discs">${Object.entries(album.discs).map((disc) => {
+				const [discName, tracks] = disc;
+
+				return html`
+					<dt>${discName}</dt>
+					<dd>
+						<ol class="tracks">${tracks.map((track) => {
 				const path = album.path + track.subpath;
 
 				return html`
@@ -201,7 +207,10 @@ import { TemplateResult } from '../lit-html/lit-html';
 						${track.name}
 					</li>
 				`;
-			})}</ol>
+						})}</ol>
+					</dd>
+				`;
+			})}</dl>
 			${asyncAppend(yieldAlbumBackground(album))}
 		`;
 	}
