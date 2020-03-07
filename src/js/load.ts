@@ -2,9 +2,6 @@ import {
 	ImageSource,
 	Album,
 	Track,
-	SupportedExtensionLower,
-	SupportedExtensionUpperOrLower,
-	SrcsetSource,
 } from '../module';
 import { TemplateResult } from '../lit-html/lit-html';
 
@@ -17,12 +14,15 @@ import { TemplateResult } from '../lit-html/lit-html';
 		{html, render},
 		{asyncAppend},
 		{asyncReplace},
-		{GetIpfsInstance},
+		{
+			albumTrackCID,
+			urlForThing,
+		},
 	] = await Promise.all([
 		import('../lit-html/lit-html.js'),
 		import('../lit-html/directives/async-append.js'),
 		import('../lit-html/directives/async-replace.js'),
-		import('./ipfs.js'),
+		import('./data.js'),
 	]);
 
 	const preloads = {
@@ -40,10 +40,8 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const back: HTMLButtonElement|null = document.querySelector(
 		'body > header button#load-albums'
 	);
-	const blobs: {[key: string]: Promise<Blob>} = {};
 	const albums = document.createElement('main');
 	const views: WeakMap<Album, HTMLElement> = new WeakMap();
-	const urls: WeakMap<Track|SrcsetSource, Promise<string>> = new WeakMap();
 	const audio = ((): HTMLAudioElement => {
 		const audio = document.createElement('audio');
 
@@ -68,115 +66,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 	});
 
 	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
-
-	const ocremix = await fetch(
-		(preloads.ocremix as HTMLLinkElement).href
-	).then((r) => {
-		return r.json();
-	});
-
-	function pathCID(path: string): string
-	{
-		if ( ! (path in ocremix)) {
-			throw new Error(
-				'album + track combo not found in ocremix payload!'
-			);
-		}
-
-		return ocremix[path];
-	}
-
-	function albumTrackCID(album: Album, track: Track): string
-	{
-		return pathCID(album.path + track.subpath);
-	}
-
-	function mimeType(ext: SupportedExtensionLower): string
-	{
-		switch (ext) {
-			case 'mp3':
-				return 'audio/mpeg';
-			case 'png':
-				return 'image/png';
-			case 'jpeg':
-			case 'jpg':
-				return 'image/jpeg';
-		}
-	}
-
-	async function fetchBlobViaCacheOrIpfs(
-		path: string,
-		skipCache = false
-	): Promise<Blob> {
-		const match = /.(mp3|png|jpe?g)$/i.exec(path);
-		const cid = pathCID(path);
-		const buffs: Array<Uint8Array> = [];
-
-		if ( ! match) {
-			throw new Error('Unsupported file type requested!');
-		}
-
-		const [, EXT] = match;
-
-		const ext = (
-			(
-				EXT as SupportedExtensionUpperOrLower
-			).toLowerCase() as SupportedExtensionLower
-		);
-
-		if ('caches' in window && ! skipCache) {
-			const cache = await caches.open('ocremix-ipfs-by-cid');
-			const url = '/ipfs/' + ocremix[path];
-			const faux = new Request(url);
-			const maybe: Response|undefined = await cache.match(faux);
-
-			const cacheBlob = maybe
-				? await maybe.blob()
-				: await fetchBlobViaCacheOrIpfs(path, true)
-
-			if ( ! maybe) {
-				await cache.put(url, new Response(cacheBlob));
-			}
-
-			return cacheBlob;
-		}
-
-		for await (const buff of (await GetIpfsInstance()).cat(cid)) {
-			buffs.push(buff);
-		}
-
-		return new Blob(buffs, {type: mimeType(ext)});
-	}
-
-	async function blob(path: string): Promise<Blob> {
-		const cid = pathCID(path);
-
-		if ( ! (cid in blobs)) {
-			blobs[cid] = new Promise((yup, nope) => {
-				try {
-					(async (): Promise<Blob> => {
-						return await fetchBlobViaCacheOrIpfs(path);
-					})().then(yup);
-				} catch (err) {
-					nope(err);
-				}
-			});
-		}
-
-		return await blobs[cid];
-	}
-
-	async function url(path: string): Promise<string> {
-		return URL.createObjectURL(await blob(path));
-	}
-
-	async function urlForThing(thing: Track|SrcsetSource, path: string): Promise<string> {
-		if ( ! urls.has(thing)) {
-			urls.set(thing, url(path));
-		}
-
-		return await (urls.get(thing) as Promise<string>);
-	}
 
 	function play(src: string): void {
 		console.log(src);
@@ -271,7 +160,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return html`
 			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
 			<ol class="tracks">${album.tracks.map((track) => {
-				const cid = albumTrackCID(album, track);
 				const path = album.path + track.subpath;
 
 				return html`
@@ -289,6 +177,8 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 									return;
 								}
+
+								const cid = await albumTrackCID(album, track);
 
 								button.disabled = true;
 								button.textContent = '⏳';
