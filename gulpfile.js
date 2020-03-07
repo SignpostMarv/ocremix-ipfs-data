@@ -307,6 +307,20 @@ gulp.task('sync', () => {
 	));
 });
 
+gulp.task('uglify', () => {
+	return gulp.src(
+		'./tmp/{js,data}/**/*.js'
+	).pipe(
+		newer('./dist/')
+	).pipe(
+		sourcemaps.init({loadMaps: true})
+	).pipe(
+		uglify()
+	).pipe(
+		sourcemaps.write('./')
+	).pipe(gulp.dest('./dist/'));
+});
+
 gulp.task('default', gulp.series(
 	gulp.parallel(
 		'html',
