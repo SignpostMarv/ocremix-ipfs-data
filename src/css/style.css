@@ -139,6 +139,11 @@ button
 	background: none ;
 	border: none ;
 	cursor: pointer ;
+
+	&:disabled
+	{
+		cursor: not-allowed ;
+	}
 }
 
 .albums
@@ -278,11 +283,6 @@ button
 		button
 		{
 			margin-right: 1rem ;
-
-			+ button:disabled
-			{
-				display: none ;
-			}
 		}
 	}
 

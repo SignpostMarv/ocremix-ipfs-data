@@ -13,7 +13,9 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const {html, render} = await import('../lit-html/lit-html.js');
 	const {asyncAppend} = await import('../lit-html/directives/async-append.js');
 	const {asyncReplace} = await import('../lit-html/directives/async-replace.js');
+	/*
 	const buttonPlaysWhat: WeakMap<HTMLButtonElement, string> = new WeakMap();
+	*/
 
 	const preloads = {
 		'style.css': document.head.querySelector(
@@ -86,6 +88,22 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return r.json();
 	});
 
+	function pathCID(path: string): string
+	{
+		if ( ! (path in ocremix)) {
+			throw new Error(
+				'album + track combo not found in ocremix payload!'
+			);
+		}
+
+		return ocremix[path];
+	}
+
+	function albumTrackCID(album: Album, track: Track): string
+	{
+		return pathCID(album.path + track.subpath);
+	}
+
 	function mimeType(ext: SupportedExtensionLower): string
 	{
 		switch (ext) {
@@ -99,11 +117,12 @@ import { TemplateResult } from '../lit-html/lit-html';
 		}
 	}
 
-	async function blob(path: string, skipCache = false): Promise<Blob> {
-		if ( ! (path in ocremix)) {
-			throw new Error('path not in ipfs list: ' + path);
-		}
+	const blobs: {[key: string]: Promise<Blob>} = {};
 
+	async function fetchBlobViaCacheOrIpfs(
+		path: string,
+		skipCache = false
+	): Promise<Blob> {
 		const match = /.(mp3|png|jpe?g)$/i.exec(path);
 
 		if ( ! match) {
@@ -128,7 +147,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 			console.log(maybe);
 
 			if ( ! maybe) {
-				const cacheBlob = await blob(path, true);
+				const cacheBlob = await fetchBlobViaCacheOrIpfs(path, true);
 
 				await cache.put(url, new Response(cacheBlob));
 
@@ -138,7 +157,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 			}
 		}
 
-		const cat = await (await GetIpfsInstance()).cat(ocremix[path]);
+		const cid = pathCID(path);
+
+		console.log(`need to fetch ${cid} over ipfs`);
+
+		const cat = await (await GetIpfsInstance()).cat(cid);
+
+		console.log(`ipfs cat result found for ${cid}`);
 
 		const buffs = [];
 
@@ -147,6 +172,24 @@ import { TemplateResult } from '../lit-html/lit-html';
 		}
 
 		return new Blob(buffs, {type: mimeType(ext)});
+	}
+
+	async function blob(path: string): Promise<Blob> {
+		const cid = pathCID(path);
+
+		if ( ! (cid in blobs)) {
+			blobs[cid] = new Promise((yup, nope) => {
+				try {
+					(async (): Promise<Blob> => {
+						return await fetchBlobViaCacheOrIpfs(path);
+					})().then(yup);
+				} catch (err) {
+					nope(err);
+				}
+			});
+		}
+
+		return await blobs[cid];
 	}
 
 	async function url(path: string): Promise<string> {
@@ -166,6 +209,12 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const audio = document.createElement('audio');
 	audio.controls = true;
 	audio.src=  '';
+
+	function play(src: string): void {
+		audio.pause();
+		audio.src = src;
+		audio.play();
+	}
 
 	back.addEventListener('click', () => {
 		if (currentAlbum) {
@@ -222,6 +271,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 		yield await picture(album, art);
 	}
 
+	/*
 	async function* YieldTrackPlayButton(
 		album: Album,
 		track: Track
@@ -251,6 +301,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 		yield button;
 	}
+	*/
 
 	async function* yieldAlbumCovers(
 		album: Album
@@ -270,16 +321,44 @@ import { TemplateResult } from '../lit-html/lit-html';
 		yield await picture(album, album.art.background, 'bg');
 	}
 
+	let trackMostRecentlyAttemptedToPlay: string|undefined;
+
 	function AlbumView(album: Album): TemplateResult {
 		return html`
 			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
 			<ol class="tracks">${album.tracks.map((track) => {
+				const cid = albumTrackCID(album, track);
+				const path = album.path + track.subpath;
+
 				return html`
 					<li>
-						${asyncAppend(YieldTrackPlayButton(album, track))}
 						<button
 							type="button"
-							disabled
+							aria-label="Play ${track.name}"
+							@click=${async (e: Event): Promise<void> => {
+								const button = e.target as HTMLButtonElement;
+								button.disabled = true;
+								button.textContent = '⏳';
+								trackMostRecentlyAttemptedToPlay = cid;
+								console.log(`queuing up ${cid} to play`);
+
+								const trackUrl = await url(path);
+
+								button.disabled = false;
+								button.textContent = '▶';
+
+								console.log(`url for ${cid} found`);
+
+								if (cid === trackMostRecentlyAttemptedToPlay) {
+									play(trackUrl);
+								} else {
+									console.log(
+										`something else queued instead of ${
+											cid
+										}`
+									);
+								}
+							}}
 						>▶</button>
 						${track.name}
 					</li>
@@ -294,16 +373,16 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 		views.set(album, view);
 		view.classList.add('view');
+		/*
 		view.addEventListener('click', (e) => {
 			if (
 				(e.target instanceof HTMLButtonElement) &&
 				buttonPlaysWhat.has(e.target)
 			) {
-				audio.pause();
-				audio.src = buttonPlaysWhat.get(e.target) + '';
-				audio.play();
+				play(buttonPlaysWhat.get(e.target) + '');
 			}
 		});
+		*/
 
 		const button = html`<button
 			aria-label="View &quot;${album.name}&quot;"
