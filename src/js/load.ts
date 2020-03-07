@@ -2,10 +2,8 @@ import {
 	ImageSource,
 	Album,
 	Track,
-	IpfsInstance,
 	SupportedExtensionLower,
 	SupportedExtensionUpperOrLower,
-	IpfsGlobal,
 } from '../module';
 import { TemplateResult } from '../lit-html/lit-html';
 
@@ -13,11 +11,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 	const [
 		{html, render},
 		{asyncAppend},
-		{asyncReplace}
+		{asyncReplace},
+		{GetIpfsInstance},
 	] = await Promise.all([
 		import('../lit-html/lit-html.js'),
 		import('../lit-html/directives/async-append.js'),
 		import('../lit-html/directives/async-replace.js'),
+		import('./ipfs.js'),
 	]);
 
 	const preloads = {
@@ -47,7 +47,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return audio;
 	})();
 
-	let _ipfs: Promise<IpfsInstance>|undefined;
 	let currentAlbum: Album|undefined;
 	let trackMostRecentlyAttemptedToPlay: string|undefined;
 
@@ -62,43 +61,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 	});
 
 	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
-
-	function GetIpfsInstance(): Promise<IpfsInstance> {
-		if (_ipfs) {
-			return _ipfs;
-		}
-
-		try {
-			if ('ipfs' in window) {
-				throw new Error(
-					'https://github.com/ipfs-shipyard/ipfs-companion/issues/852'
-				);
-				/*
-				_ipfs = (
-					window as (
-						Window &
-						typeof globalThis &
-						{ipfs: {enable: () => Promise<IpfsInstance>}}
-					)
-				).ipfs.enable();
-				*/
-			}
-
-			throw new Error('window.ipfs not available');
-		} catch (err) {
-			console.error(err);
-
-			_ipfs = new Promise((yup): void => {
-				(async (src): Promise<void> => {
-					yup (
-						await ((await import(src)).Ipfs as IpfsGlobal).create()
-					);
-				})((preloads.ipfs as HTMLLinkElement).href);
-			});
-		}
-
-		return _ipfs;
-	}
 
 	const ocremix = await fetch(
 		(preloads.ocremix as HTMLLinkElement).href
