@@ -10,9 +10,15 @@ import {
 import { TemplateResult } from '../lit-html/lit-html';
 
 (async (): Promise<void> => {
-	const {html, render} = await import('../lit-html/lit-html.js');
-	const {asyncAppend} = await import('../lit-html/directives/async-append.js');
-	const {asyncReplace} = await import('../lit-html/directives/async-replace.js');
+	const [
+		{html, render},
+		{asyncAppend},
+		{asyncReplace}
+	] = await Promise.all([
+		import('../lit-html/lit-html.js'),
+		import('../lit-html/directives/async-append.js'),
+		import('../lit-html/directives/async-replace.js'),
+	]);
 
 	const preloads = {
 		'style.css': document.head.querySelector(
@@ -26,7 +32,24 @@ import { TemplateResult } from '../lit-html/lit-html';
 		),
 	};
 
-	const back: HTMLButtonElement|null = document.querySelector('body > header button#load-albums');
+	const back: HTMLButtonElement|null = document.querySelector(
+		'body > header button#load-albums'
+	);
+	const blobs: {[key: string]: Promise<Blob>} = {};
+	const albums = document.createElement('main');
+	const views: WeakMap<Album, HTMLElement> = new WeakMap();
+	const audio = ((): HTMLAudioElement => {
+		const audio = document.createElement('audio');
+
+		audio.controls = true;
+		audio.src=  '';
+
+		return audio;
+	})();
+
+	let _ipfs: Promise<IpfsInstance>|undefined;
+	let currentAlbum: Album|undefined;
+	let trackMostRecentlyAttemptedToPlay: string|undefined;
 
 	if ( ! (back instanceof HTMLButtonElement)) {
 		throw new Error('Could not find back button');
@@ -39,8 +62,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 	});
 
 	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
-
-	let _ipfs: Promise<IpfsInstance>|undefined;
 
 	function GetIpfsInstance(): Promise<IpfsInstance> {
 		if (_ipfs) {
@@ -114,13 +135,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 		}
 	}
 
-	const blobs: {[key: string]: Promise<Blob>} = {};
-
 	async function fetchBlobViaCacheOrIpfs(
 		path: string,
 		skipCache = false
 	): Promise<Blob> {
 		const match = /.(mp3|png|jpe?g)$/i.exec(path);
+		const cid = pathCID(path);
+		const buffs: Array<Uint8Array> = [];
 
 		if ( ! match) {
 			throw new Error('Unsupported file type requested!');
@@ -138,33 +159,20 @@ import { TemplateResult } from '../lit-html/lit-html';
 			const cache = await caches.open('ocremix-ipfs-by-cid');
 			const url = '/ipfs/' + ocremix[path];
 			const faux = new Request(url);
-
 			const maybe: Response|undefined = await cache.match(faux);
 
-			console.log(maybe);
+			const cacheBlob = maybe
+				? await maybe.blob()
+				: await fetchBlobViaCacheOrIpfs(path, true)
 
 			if ( ! maybe) {
-				const cacheBlob = await fetchBlobViaCacheOrIpfs(path, true);
-
 				await cache.put(url, new Response(cacheBlob));
-
-				return cacheBlob;
-			} else {
-				return await maybe.blob();
 			}
+
+			return cacheBlob;
 		}
 
-		const cid = pathCID(path);
-
-		console.log(`need to fetch ${cid} over ipfs`);
-
-		const cat = await (await GetIpfsInstance()).cat(cid);
-
-		console.log(`ipfs cat result found for ${cid}`);
-
-		const buffs = [];
-
-		for await (const buff of cat) {
+		for await (const buff of (await GetIpfsInstance()).cat(cid)) {
 			buffs.push(buff);
 		}
 
@@ -193,25 +201,15 @@ import { TemplateResult } from '../lit-html/lit-html';
 		return URL.createObjectURL(await blob(path));
 	}
 
-	let currentAlbum: Album|undefined;
-
-	console.log(currentAlbum);
-
-	const albums = document.createElement('main');
-	albums.classList.add('albums');
-
-	document.body.appendChild(albums);
-
-	const views: WeakMap<Album, HTMLElement> = new WeakMap();
-	const audio = document.createElement('audio');
-	audio.controls = true;
-	audio.src=  '';
-
 	function play(src: string): void {
 		audio.pause();
 		audio.src = src;
 		audio.play();
 	}
+
+	albums.classList.add('albums');
+
+	document.body.appendChild(albums);
 
 	back.addEventListener('click', () => {
 		if (currentAlbum) {
@@ -237,13 +235,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 				return srcsetSrc + ' ' + srcset.width.toString(10) + 'w';
 			}
 		));
+		const picture = document.createElement('picture');
+		const img = new Image();
 
 		if (srcset.length > 0) {
 			srcset.push(src + ' ' + art.width.toString(10) + 'w');
 		}
 
-		const picture = document.createElement('picture');
-		const img = new Image();
 		img.src = src;
 		img.width = art.width;
 		img.height = art.height;
@@ -286,8 +284,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 		yield await picture(album, album.art.background, 'bg');
 	}
 
-	let trackMostRecentlyAttemptedToPlay: string|undefined;
-
 	function AlbumView(album: Album): TemplateResult {
 		return html`
 			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
@@ -305,23 +301,14 @@ import { TemplateResult } from '../lit-html/lit-html';
 								button.disabled = true;
 								button.textContent = '⏳';
 								trackMostRecentlyAttemptedToPlay = cid;
-								console.log(`queuing up ${cid} to play`);
 
 								const trackUrl = await url(path);
 
 								button.disabled = false;
 								button.textContent = '▶';
 
-								console.log(`url for ${cid} found`);
-
 								if (cid === trackMostRecentlyAttemptedToPlay) {
 									play(trackUrl);
-								} else {
-									console.log(
-										`something else queued instead of ${
-											cid
-										}`
-									);
 								}
 							}}
 						>▶</button>
@@ -335,10 +322,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 	async function AddAlbum(album: Album): Promise<TemplateResult> {
 		const view = document.createElement('main');
-
-		views.set(album, view);
-		view.classList.add('view');
-
 		const button = html`<button
 			aria-label="View &quot;${album.name}&quot;"
 			data-name="${album.name}"
@@ -359,6 +342,9 @@ import { TemplateResult } from '../lit-html/lit-html';
 			album,
 			album.art.covers[0]
 		))}</button>`;
+
+		views.set(album, view);
+		view.classList.add('view');
 
 		return button;
 	}
