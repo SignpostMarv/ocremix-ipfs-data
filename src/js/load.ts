@@ -27,8 +27,8 @@ import {Albums} from '../data/albums.js';
 		),
 	};
 
-	const back: HTMLButtonElement|null = document.querySelector(
-		'body > header button#load-albums'
+	const back: HTMLAnchorElement|null = document.querySelector(
+		'body > header a#load-albums'
 	);
 	const albums = document.createElement('main');
 	const views: WeakMap<Album, HTMLElement> = new WeakMap();
@@ -45,7 +45,7 @@ import {Albums} from '../data/albums.js';
 		return audio;
 	})();
 
-	if ( ! (back instanceof HTMLButtonElement)) {
+	if ( ! (back instanceof HTMLAnchorElement)) {
 		throw new Error('Could not find back button');
 	}
 
@@ -69,16 +69,6 @@ import {Albums} from '../data/albums.js';
 	albums.classList.add('albums');
 
 	document.body.appendChild(albums);
-
-	back.addEventListener('click', () => {
-		if (currentAlbum) {
-			document.body.removeChild(views.get(currentAlbum) as HTMLElement);
-		}
-		document.body.appendChild(albums);
-		back.disabled = true;
-		currentAlbum = undefined;
-	});
-
 	document.body.appendChild(audio);
 
 	async function picture(
@@ -206,30 +196,14 @@ import {Albums} from '../data/albums.js';
 	}
 
 	async function AddAlbum(album: Album, _albumId: string): Promise<TemplateResult> {
-		const view = document.createElement('main');
-		const button = html`<button
+		const button = html`<a
+			href="#album/${_albumId}"
 			aria-label="View &quot;${album.name}&quot;"
-			data-name="${album.name}"
-			@click=${(): void => {
-				if (currentAlbum) {
-					document.body.removeChild(
-						views.get(currentAlbum) as HTMLElement
-					);
-				}
-				currentAlbum = album;
-				document.body.removeChild(albums);
-				render(AlbumView(album), view);
-				document.body.appendChild(view);
-				(back as HTMLButtonElement).disabled = false;
-			}}
 		>${asyncReplace(yieldPlaceholderThenPicture(
 			'Loading...',
 			album,
 			album.art.covers[0]
-		))}</button>`;
-
-		views.set(album, view);
-		view.classList.add('view');
+		))}</a>`;
 
 		return button;
 	}
@@ -243,4 +217,53 @@ import {Albums} from '../data/albums.js';
 	}
 
 	render(html`${asyncAppend(renderAlbums())}`, albums);
+
+	const albumHashRegex = /^#album\/(OCRA\d{4})$/;
+
+	function handleHash(hash: string): void {
+		if ('#' === hash || '' === hash) {
+			for (const toRemove of document.querySelectorAll('body > main')) {
+				document.body.removeChild(toRemove);
+			}
+			document.body.appendChild(albums);
+			(back as HTMLAnchorElement).classList.add('disabled');
+		} else {
+			document.body.removeChild(albums);
+			(back as HTMLAnchorElement).classList.remove('disabled');
+
+			const maybe = albumHashRegex.exec(hash);
+
+			if (maybe && maybe[1] in Albums) {
+				Albums[maybe[1]]().then((album) => {
+					if ( ! views.has(album)) {
+						const view = document.createElement('main');
+						render(AlbumView(album), view);
+						view.classList.add('view');
+						views.set(album, view);
+					}
+
+					if (location.hash === hash) {
+						currentAlbum = album;
+						document.body.appendChild(
+							views.get(album) as HTMLElement
+						);
+					} else {
+						console.log(
+							'hash changed while album data was being loaded'
+						);
+					}
+				});
+			} else {
+				console.warn('unsupported hash specified', hash);
+			}
+		}
+	}
+
+	addEventListener('hashchange', () => {
+		handleHash(location.hash);
+	});
+
+	handleHash(location.hash);
+
+	console.info(currentAlbum);
 })();
