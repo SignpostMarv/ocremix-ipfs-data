@@ -362,7 +362,7 @@ import {Albums} from '../data/albums.js';
 			});
 		} else {
 			if (albums.parentNode === document.body) {
-			document.body.removeChild(albums);
+				document.body.removeChild(albums);
 			}
 
 			const maybe = albumHashRegex.exec(hash);
