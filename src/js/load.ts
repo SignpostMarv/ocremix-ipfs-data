@@ -351,7 +351,7 @@ import {Albums} from '../data/albums.js';
 		}
 	}
 
-	function handleHash(hash: string): void {
+	async function handleHash(hash: string): Promise<void> {
 		if ('#' === hash || '' === hash) {
 			swapMain(albums, false);
 		} else if ('#app' === hash) {
@@ -368,7 +368,7 @@ import {Albums} from '../data/albums.js';
 			const maybe = albumHashRegex.exec(hash);
 
 			if (maybe && maybe[1] in Albums) {
-				Albums[maybe[1]]().then((album) => {
+				const album = await Albums[maybe[1]]();
 					if ( ! views.has(album)) {
 						const view = document.createElement('main');
 						render(AlbumView(album), view);
@@ -386,7 +386,6 @@ import {Albums} from '../data/albums.js';
 							'hash changed while album data was being loaded'
 						);
 					}
-				});
 			} else {
 				console.warn('unsupported hash specified', hash);
 			}
