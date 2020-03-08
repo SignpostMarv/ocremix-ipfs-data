@@ -31,12 +31,6 @@ import { TemplateResult } from '../lit-html/lit-html';
 		'style.css': document.head.querySelector(
 			'link[rel="preload"][as="style"][href$="/css/style.css"]'
 		),
-		'ipfs': document.head.querySelector(
-			'link[rel="modulepreload"][href$="/ipfs/index.module.min.js"]'
-		),
-		'ocremix' : document.head.querySelector(
-			'link[rel="preload"][as="fetch"][href$="/data/ocremix-cids.json"]'
-		),
 	};
 
 	const back: HTMLButtonElement|null = document.querySelector(
