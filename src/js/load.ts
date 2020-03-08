@@ -146,47 +146,47 @@ import {Albums} from '../data/albums.js';
 					<dt>${discName}</dt>
 					<dd>
 						<ol class="tracks">${tracks.map((track) => {
-				const path = album.path + track.subpath;
+							const path = album.path + track.subpath;
 
-				return html`
-					<li>
-						<button
-							type="button"
-							aria-label="Play or Pause ${track.name}"
-							@click=${async (e: Event): Promise<void> => {
-								const button = e.target as HTMLButtonElement;
+							return html`
+								<li>
+									<button
+										type="button"
+										aria-label="Play or Pause ${track.name}"
+										@click=${async (e: Event): Promise<void> => {
+											const button = e.target as HTMLButtonElement;
 
-								if (currentTrack === track) {
-									audio.pause();
-									button.textContent = '⏯';
-									currentTrack = undefined;
+											if (currentTrack === track) {
+												audio.pause();
+												button.textContent = '⏯';
+												currentTrack = undefined;
 
-									return;
-								}
+												return;
+											}
 
-								const cid = await albumTrackCID(album, track);
+											const cid = await albumTrackCID(album, track);
 
-								button.disabled = true;
-								button.textContent = '⏳';
-								trackMostRecentlyAttemptedToPlay = cid;
+											button.disabled = true;
+											button.textContent = '⏳';
+											trackMostRecentlyAttemptedToPlay = cid;
 
-								const trackUrl = await urlForThing(
-									track,
-									path
-								);
+											const trackUrl = await urlForThing(
+												track,
+												path
+											);
 
-								button.disabled = false;
-								button.textContent = '⏯';
+											button.disabled = false;
+											button.textContent = '⏯';
 
-								if (cid === trackMostRecentlyAttemptedToPlay) {
-									currentTrack = track;
-									play(trackUrl);
-								}
-							}}
-						>⏯</button>
-						${track.name}
-					</li>
-				`;
+											if (cid === trackMostRecentlyAttemptedToPlay) {
+												currentTrack = track;
+												play(trackUrl);
+											}
+										}}
+									>⏯</button>
+									${track.name}
+								</li>
+							`;
 						})}</ol>
 					</dd>
 				`;
