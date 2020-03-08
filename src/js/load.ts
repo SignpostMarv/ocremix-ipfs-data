@@ -140,37 +140,37 @@ import {Albums} from '../data/albums.js';
 		album: Album,
 		track: Track
 	): (e: Event) => Promise<void> {
-							const path = album.path + track.subpath;
+		const path = album.path + track.subpath;
 
 		return async (e: Event): Promise<void> => {
-											const button = e.target as HTMLButtonElement;
+			const button = e.target as HTMLButtonElement;
 
-											if (currentTrack === track) {
-												audio.pause();
-												button.textContent = '⏯';
-												currentTrack = undefined;
+			if (currentTrack === track) {
+				audio.pause();
+				button.textContent = '⏯';
+				currentTrack = undefined;
 
-												return;
-											}
+				return;
+			}
 
-											const cid = await albumTrackCID(album, track);
+			const cid = await albumTrackCID(album, track);
 
-											button.disabled = true;
-											button.textContent = '⏳';
-											trackMostRecentlyAttemptedToPlay = cid;
+			button.disabled = true;
+			button.textContent = '⏳';
+			trackMostRecentlyAttemptedToPlay = cid;
 
-											const trackUrl = await urlForThing(
-												track,
-												path
-											);
+			const trackUrl = await urlForThing(
+				track,
+				path
+			);
 
-											button.disabled = false;
-											button.textContent = '⏯';
+			button.disabled = false;
+			button.textContent = '⏯';
 
-											if (cid === trackMostRecentlyAttemptedToPlay) {
-												currentTrack = track;
-												play(trackUrl);
-											}
+			if (cid === trackMostRecentlyAttemptedToPlay) {
+				currentTrack = track;
+				play(trackUrl);
+			}
 		};
 	}
 
