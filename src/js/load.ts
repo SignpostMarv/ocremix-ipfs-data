@@ -18,11 +18,13 @@ import { TemplateResult } from '../lit-html/lit-html';
 			albumTrackCID,
 			urlForThing,
 		},
+		{Albums},
 	] = await Promise.all([
 		import('../lit-html/lit-html.js'),
 		import('../lit-html/directives/async-append.js'),
 		import('../lit-html/directives/async-replace.js'),
 		import('./data.js'),
+		import('../data/albums.js'),
 	]);
 
 	const preloads = {
@@ -215,7 +217,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 		`;
 	}
 
-	async function AddAlbum(album: Album): Promise<TemplateResult> {
+	async function AddAlbum(album: Album, _albumId: string): Promise<TemplateResult> {
 		const view = document.createElement('main');
 		const button = html`<button
 			aria-label="View &quot;${album.name}&quot;"
@@ -245,13 +247,9 @@ import { TemplateResult } from '../lit-html/lit-html';
 	}
 
 	async function* renderAlbums(): AsyncGenerator<TemplateResult> {
-		for (const albumModuleSrc of [
-			'../data/albums/OCRA-0006.js',
-			'../data/albums/OCRA-0025.js',
-			'../data/albums/OCRA-0029.js',
-		]) {
-			yield await import(albumModuleSrc).then((album) => {
-				return AddAlbum(album.default);
+		for (const [albumId, albumGetter] of Object.entries(Albums)) {
+			yield await albumGetter().then((album) => {
+				return AddAlbum(album, albumId);
 			})
 		}
 	}
