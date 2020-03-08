@@ -136,24 +136,13 @@ import {Albums} from '../data/albums.js';
 		yield await picture(album, album.art.background, 'bg');
 	}
 
-	function AlbumView(album: Album): TemplateResult {
-		return html`
-			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
-			<dl class="discs">${Object.entries(album.discs).map((disc) => {
-				const [discName, tracks] = disc;
-
-				return html`
-					<dt>${discName}</dt>
-					<dd>
-						<ol class="tracks">${tracks.map((track) => {
+	function AlbumViewClickFactory(
+		album: Album,
+		track: Track
+	): (e: Event) => Promise<void> {
 							const path = album.path + track.subpath;
 
-							return html`
-								<li>
-									<button
-										type="button"
-										aria-label="Play or Pause ${track.name}"
-										@click=${async (e: Event): Promise<void> => {
+		return async (e: Event): Promise<void> => {
 											const button = e.target as HTMLButtonElement;
 
 											if (currentTrack === track) {
@@ -182,7 +171,30 @@ import {Albums} from '../data/albums.js';
 												currentTrack = track;
 												play(trackUrl);
 											}
-										}}
+		};
+	}
+
+	function AlbumView(album: Album): TemplateResult {
+		return html`
+			<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
+			<dl class="discs">${Object.entries(album.discs).map((disc) => {
+				const [discName, tracks] = disc;
+
+				return html`
+					<dt>${discName}</dt>
+					<dd>
+						<ol class="tracks">${tracks.map((track) => {
+							return html`
+								<li>
+									<button
+										type="button"
+										aria-label="Play or Pause ${
+											track.name
+									}"
+										@click=${AlbumViewClickFactory(
+											album,
+											track
+										)}
 									>⏯</button>
 									${track.name}
 								</li>
@@ -195,7 +207,10 @@ import {Albums} from '../data/albums.js';
 		`;
 	}
 
-	async function AddAlbum(album: Album, _albumId: string): Promise<TemplateResult> {
+	async function AddAlbum(
+		album: Album,
+		_albumId: string
+	): Promise<TemplateResult> {
 		const button = html`<a
 			href="#album/${_albumId}"
 			aria-label="View &quot;${album.name}&quot;"
