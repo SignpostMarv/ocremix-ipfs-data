@@ -31,6 +31,8 @@ import {Albums} from '../data/albums.js';
 		'body > header a#load-albums'
 	);
 	const albums = document.createElement('main');
+	const appInfo = document.createElement('main');
+	const storageEstimate = document.createElement('table');
 	const views: WeakMap<Album, HTMLElement> = new WeakMap();
 	const audio = ((): HTMLAudioElement => {
 		const audio = document.createElement('audio');
@@ -67,6 +69,8 @@ import {Albums} from '../data/albums.js';
 	}
 
 	albums.classList.add('albums');
+	appInfo.classList.add('app-info');
+	storageEstimate.border = '1';
 
 	document.body.appendChild(albums);
 	document.body.appendChild(audio);
@@ -134,6 +138,86 @@ import {Albums} from '../data/albums.js';
 		album: Album
 	): AsyncGenerator<HTMLPictureElement> {
 		yield await picture(album, album.art.background, 'bg');
+	}
+
+	async function* yieldStorageEstimate(
+		estimate: number
+	): AsyncGenerator<string> {
+		yield 'calculating...';
+
+		let divisor = 0;
+
+		const labels = [
+			'b',
+			'kb',
+			'mb',
+			'gb',
+			'tb',
+		];
+
+		const estimateDisplay = (): string => {
+			return `${
+				(estimate / (1024 ** divisor)).toFixed(2)
+			}${
+				labels[divisor]
+			}`;
+		}
+
+		while (
+			(estimate / (1024 ** divisor)) > 1 &&
+			divisor < labels.length
+		) {
+			yield estimateDisplay();
+
+			++divisor;
+		}
+	}
+
+	async function updateStorageEstimate(): Promise<void> {
+		const estimate = await navigator.storage.estimate();
+
+		if ( ! ('usageDetails' in estimate)) {
+			render(
+				html`<tbody><tr><td>n/a</td></tr></tbody>`,
+				storageEstimate
+			);
+
+			return;
+		}
+
+		const usageDetails = (
+			estimate as (
+				StorageEstimate & {
+					usageDetails: {
+						[usage: string]: number;
+					};
+				}
+			)
+		).usageDetails;
+
+		render(
+			html`
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Usage</th>
+					</tr>
+				</thead>
+				<tbody>${
+					Object.entries(usageDetails).map((usageEstimate) => {
+						return html`
+							<tr>
+								<th scope="row">${usageEstimate[0]}</th>
+								<td>${asyncReplace(yieldStorageEstimate(
+									usageEstimate[1]
+								))}</td>
+							</tr>
+						`;
+					})
+				}</tbody>
+			`,
+			storageEstimate
+		)
 	}
 
 	function AlbumViewClickFactory(
@@ -233,18 +317,53 @@ import {Albums} from '../data/albums.js';
 
 	render(html`${asyncAppend(renderAlbums())}`, albums);
 
+	render(
+		html`
+			<h2>App Info</h2>
+			${
+				('storage' in navigator)
+					? html`
+						<h3>Data</h3>
+						<h3>Storage Estimate</h4>
+						${storageEstimate}
+					`
+					: html`<p>No App Info</p>`
+			}
+		`,
+		appInfo
+	);
+
 	const albumHashRegex = /^#album\/(OCRA\d{4})$/;
+
+	function swapMain(useThisInstead: HTMLElement, allowBack = true): void {
+		for (const toRemove of document.querySelectorAll('body > main')) {
+			if (toRemove !== useThisInstead) {
+				document.body.removeChild(toRemove);
+			}
+		}
+
+		document.body.appendChild(useThisInstead);
+
+		if (allowBack) {
+			(back as HTMLAnchorElement).classList.remove('disabled');
+		} else {
+			(back as HTMLAnchorElement).classList.add('disabled');
+		}
+	}
 
 	function handleHash(hash: string): void {
 		if ('#' === hash || '' === hash) {
-			for (const toRemove of document.querySelectorAll('body > main')) {
-				document.body.removeChild(toRemove);
-			}
-			document.body.appendChild(albums);
-			(back as HTMLAnchorElement).classList.add('disabled');
+			swapMain(albums, false);
+		} else if ('#app' === hash) {
+			updateStorageEstimate().then(() => {
+				if (hash === location.hash) {
+					swapMain(appInfo);
+				}
+			});
 		} else {
+			if (albums.parentNode === document.body) {
 			document.body.removeChild(albums);
-			(back as HTMLAnchorElement).classList.remove('disabled');
+			}
 
 			const maybe = albumHashRegex.exec(hash);
 
@@ -259,7 +378,7 @@ import {Albums} from '../data/albums.js';
 
 					if (location.hash === hash) {
 						currentAlbum = album;
-						document.body.appendChild(
+						swapMain(
 							views.get(album) as HTMLElement
 						);
 					} else {

@@ -7,6 +7,7 @@
 	color: inherit ;
 	padding: 0 ;
 	margin: 0 ;
+	text-align: inherit ;
 }
 
 html,
@@ -18,6 +19,7 @@ body
 html
 {
 	font-size: 16px ;
+	text-align: left ;
 
 	@media (min-width: 320px)
 	{
@@ -117,6 +119,11 @@ header
 {
 	padding-bottom: 1rem ;
 
+	a
+	{
+		text-decoration: none ;
+	}
+
 	.disabled,
 	:disabled
 	{
@@ -150,6 +157,40 @@ button
 	&:disabled
 	{
 		cursor: not-allowed ;
+	}
+}
+
+table
+{
+	border-collapse: collapse ;
+
+	th,
+	td
+	{
+		padding: .5rem ;
+	}
+
+	th
+	{
+		font-weight: bolder ;
+	}
+}
+
+.view,
+.settings
+{
+	button
+	{
+		background: #000 ;
+		color: #fff ;
+		border: none ;
+		padding: .5rem ;
+
+		@media (prefers-color-scheme: dark)
+		{
+			background: #fff ;
+			color: #000;
+		}
 	}
 }
 
@@ -309,20 +350,6 @@ button
 		button
 		{
 			margin-right: 1rem ;
-		}
-	}
-
-	button
-	{
-		background: #000 ;
-		color: #fff ;
-		border: none ;
-		padding: .5rem ;
-
-		@media (prefers-color-scheme: dark)
-		{
-			background: #fff ;
-			color: #000;
 		}
 	}
 
