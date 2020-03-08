@@ -226,9 +226,9 @@ import {
 				updateStorageEstimate(storageEstimate),
 				updateBulkAlbumActions(appInfo, bulkAlbumActions),
 			]);
-				if (hash === location.hash) {
-					swapMain(appInfo);
-				}
+			if (hash === location.hash) {
+				swapMain(appInfo);
+			}
 		} else {
 			if (albums.parentNode === document.body) {
 				document.body.removeChild(albums);
@@ -239,23 +239,23 @@ import {
 			if (maybe && maybe[1] in Albums) {
 				const album = await Albums[maybe[1]]();
 
-					if ( ! views.has(album)) {
-						const view = document.createElement('main');
-						render(AlbumView(album), view);
-						view.classList.add('view');
-						views.set(album, view);
-					}
+				if ( ! views.has(album)) {
+					const view = document.createElement('main');
+					render(AlbumView(album), view);
+					view.classList.add('view');
+					views.set(album, view);
+				}
 
-					if (location.hash === hash) {
-						currentAlbum = album;
-						swapMain(
-							views.get(album) as HTMLElement
-						);
-					} else {
-						console.log(
-							'hash changed while album data was being loaded'
-						);
-					}
+				if (location.hash === hash) {
+					currentAlbum = album;
+					swapMain(
+						views.get(album) as HTMLElement
+					);
+				} else {
+					console.log(
+						'hash changed while album data was being loaded'
+					);
+				}
 			} else {
 				console.warn('unsupported hash specified', hash);
 			}
