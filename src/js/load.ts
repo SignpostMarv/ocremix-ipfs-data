@@ -246,6 +246,7 @@ import { TemplateResult } from '../lit-html/lit-html';
 
 	async function* renderAlbums(): AsyncGenerator<TemplateResult> {
 		for (const albumModuleSrc of [
+			'../data/albums/OCRA-0006.js',
 			'../data/albums/OCRA-0025.js',
 			'../data/albums/OCRA-0029.js',
 		]) {
