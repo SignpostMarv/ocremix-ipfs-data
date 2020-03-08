@@ -27,7 +27,8 @@ export async function pathCID(path: string): Promise<string>
 
 	if ( ! (path in ocremix)) {
 		throw new Error(
-			'album + track combo not found in ocremix payload!'
+			'album + track combo not found in ocremix payload: ' +
+			path
 		);
 	}
 
