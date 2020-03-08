@@ -48,6 +48,11 @@ html
 	{
 		font-size: calc((100vw / 1920) * 16) ;
 	}
+
+	@media (min-width: 2560px)
+	{
+		font-size: 24px ;
+	}
 }
 
 body

@@ -3,29 +3,23 @@ import {
 	Album,
 	Track,
 } from '../module';
-import { TemplateResult } from '../lit-html/lit-html';
+import {
+	TemplateResult,
+	html,
+	render,
+} from '../lit-html/lit-html.js';
+import {asyncAppend} from '../lit-html/directives/async-append.js';
+import {asyncReplace} from '../lit-html/directives/async-replace.js';
+import {
+	albumTrackCID,
+	urlForThing,
+} from './data.js';
+import {Albums} from '../data/albums.js';
 
 (async (): Promise<void> => {
 	let currentAlbum: Album|undefined;
 	let currentTrack: Track|undefined;
 	let trackMostRecentlyAttemptedToPlay: string|undefined;
-
-	const [
-		{html, render},
-		{asyncAppend},
-		{asyncReplace},
-		{
-			albumTrackCID,
-			urlForThing,
-		},
-		{Albums},
-	] = await Promise.all([
-		import('../lit-html/lit-html.js'),
-		import('../lit-html/directives/async-append.js'),
-		import('../lit-html/directives/async-replace.js'),
-		import('./data.js'),
-		import('../data/albums.js'),
-	]);
 
 	const preloads = {
 		'style.css': document.head.querySelector(

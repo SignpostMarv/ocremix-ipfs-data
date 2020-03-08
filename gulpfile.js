@@ -11,6 +11,7 @@ const eslint = require('gulp-eslint');
 const filter = require('gulp-filter');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
+const inline_source = require('gulp-inline-source');
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -293,7 +294,7 @@ gulp.task('sync--lit-html', () => {
 
 gulp.task('sync', () => {
 	return gulp.src([
-		'./tmp/{css/*.*,*.html,data/*.json,{js,data}/**/*.d.ts}',
+		'./tmp/{css/*.*,data/*.json,{js,data}/**/*.d.ts}',
 		'./src/module.d.ts',
 	]).pipe(
 		changed(
@@ -305,6 +306,18 @@ gulp.task('sync', () => {
 	).pipe(gulp.dest(
 		'./dist/'
 	));
+});
+
+gulp.task('sync--html', () => {
+	return gulp.src([
+		'./tmp/*.html',
+	]).pipe(
+		newer('./dist/')
+	).pipe(
+		inline_source()
+	).pipe(
+		gulp.dest('./dist/')
+	)
 });
 
 gulp.task('uglify', () => {
@@ -337,6 +350,7 @@ gulp.task('default', gulp.series(
 	),
 	gulp.parallel(
 		'sync',
+		'sync--html',
 		'uglify'
 	)
 ));

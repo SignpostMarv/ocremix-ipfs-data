@@ -1,103 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OverClocked ReMix IPFS Portal</title>
-    <meta
-        name="description"
-        content="Portal to accessing OCRemix content via IPFS"
+	<title>OverClocked ReMix IPFS Portal</title>
+	<meta
+		name="description"
+		content="Portal to accessing OCRemix content via IPFS"
 	>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="./css/first-load.css">
+	<link rel="stylesheet" href="./css/first-load.css" inline>
 	<link
 		rel="preload"
 		as="style"
 		crossorigin="anonymous"
 		href="./css/style.css"
-	>
-	<link
-		rel="modulepreload"
-		href="./lit-html/lit-html.js"
-		crossorigin="anonymous"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/directives/async-append.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/directives/async-replace.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/default-template-processor.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/template-result.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/directive.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/dom.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/part.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/parts.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/render.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/template-factory.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/template-instance.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./lit-html/lib/template.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./ipfs/index.module.min.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./js/ipfs.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./js/data.js"
-	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./js/mimeType.js"
 	>
 	<link
 		rel="preload"
@@ -120,15 +35,10 @@
 		crossorigin="anonymous"
 		href="./data/albums/OCRA-0029.js"
 	>
-	<link
-		rel="modulepreload"
-		crossorigin="anonymous"
-		href="./data/albums.js"
-	>
 </head>
 <body>
 <header>
-    <h1>
+	<h1>
 		OverClocked ReMix
 		<abbr title="InterPlanetary File System">IPFS</abbr>
 		Portal
@@ -138,13 +48,13 @@
 			id="load-albums"
 		>🔙</button>
 	</h1>
-    <noscript>
+	<noscript>
 		<div class="monospace">
 			<p>This portal uses a <abbr title="JavaScript">JS</abbr> implementation
 				of IPFS, and as such requires JS to be enabled.</p>
 		</div>
-    </noscript>
+	</noscript>
 </header>
-<script async src="./js/load.js" module></script>
+<script async type="module" src="./js/load.js"></script>
 </body>
 </html>
