@@ -1,0 +1,5 @@
+/.github/
+/.editorconfig
+/.eslint.js
+/gulpfile.js
+/tsconfig.json

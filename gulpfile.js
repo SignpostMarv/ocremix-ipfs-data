@@ -1,45 +1,20 @@
-const gulp = require('gulp');
-const postcss = require('gulp-postcss');
-const changed = require('gulp-changed');
-const htmlmin = require('gulp-htmlmin');
-const newer = require('gulp-newer');
-const purgecss = require('gulp-purgecss');
+const {
+	src,
+	dest,
+	parallel,
+} = require('gulp');
 const typescript = require('gulp-typescript');
-const replace = require('gulp-replace');
 const rename = require('gulp-rename');
 const eslint = require('gulp-eslint');
 const filter = require('gulp-filter');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
-const inline_source = require('gulp-inline-source');
+const tsProject = typescript.createProject('./tsconfig.json')();
 
-const postcss_plugins = {
-	nested: require('postcss-nested'),
-	calc: require('postcss-nested'),
-	font_family_system_ui: require('postcss-font-family-system-ui'),
-	system_monospace: require('postcss-system-monospace'),
-	cssnano: require('cssnano'),
-	import: require('postcss-import'),
-};
-
-const postcss_config = () => {
-	return postcss([
-		postcss_plugins.import(),
-		postcss_plugins.nested(),
-		postcss_plugins.calc(),
-		postcss_plugins.font_family_system_ui(),
-		postcss_plugins.system_monospace(),
-		postcss_plugins.cssnano({
-			cssDeclarationSorter: 'concentric-css',
-			discardUnused: true,
-		}),
-	]);
-};
-
-gulp.task('cache-ipfs-tree-as-json', async () => {
+exports.cacheIpfsTreeAsJson = async (cb) => {
 	const ipfs = await require('ipfs').create();
 
-	return new Promise(async (yup, nope) => {
+	await new Promise(async (yup, nope) => {
 		try {
 			async function ReadIpfsDir(
 				cid,
@@ -78,7 +53,7 @@ gulp.task('cache-ipfs-tree-as-json', async () => {
 			const fs = require('fs');
 
 			fs.writeFile(
-				'./dist/data/ocremix-cids.json',
+				'./src/data/ocremix-cids.min.json',
 				JSON.stringify(ocremix),
 				() => {
 					fs.writeFile(
@@ -91,266 +66,53 @@ gulp.task('cache-ipfs-tree-as-json', async () => {
 				}
 			);
 		} catch (err) {
-			nope(err);
+			yup(err);
 		}
-	}).finally(() => {
+	}).then(async (res) => {
+		if (0 !== res) {
+			console.error(err);
+		}
+
 		try {
-			ipfs.stop();
+			await ipfs.stop();
 		} catch (err) {
 			console.error(err);
 		}
 	});
-});
+};
 
-gulp.task('css--style', () => {
-	return gulp.src(
-		'./src/css/style.css'
+exports.ts = () => {
+	return src('./src/**/*.ts').pipe(
+		sourcemaps.init()
 	).pipe(
-		newer('./tmp/css/')
+		eslint({
+			configFile: './.eslint.js',
+		})
 	).pipe(
-		postcss_config()
-	).pipe(gulp.dest(
-		'./tmp/css/'
-	));
-});
-
-gulp.task('css--first-load', () => {
-	return gulp.src(
-		'./src/css/style.css'
+		eslint.format()
 	).pipe(
-		newer('./tmp/css/')
+		eslint.failAfterError()
 	).pipe(
-		postcss_config()
-	).pipe(purgecss({
-		content: [
-			'./tmp/**/*.html'
-		],
-		rejected: false,
-	})).pipe(
-		rename('first-load.css')
-	).pipe(gulp.dest(
-		'./tmp/css/'
-	));
-});
-
-gulp.task('html', () => {
-	return gulp.src('./src/**/*.html').pipe(
-		newer('./tmp/')
-	).pipe(htmlmin({
-		collapseBooleanAttributes: true,
-		collapseInlineTagWhitespace: false,
-		collapseWhitespace: true,
-		decodeEntities: true,
-		sortAttributes: true,
-		maxLineLength: 79,
-	})).pipe(gulp.dest(
-		'./tmp/'
-	));
-});
-
-gulp.task('ts', () => {
-	return gulp.src(
-		'./src/{js,data}/**/*.ts'
+		tsProject
 	).pipe(
+		sourcemaps.write('./')
+	).pipe(dest(
+		'./src/'
+	)).pipe(
 		filter([
-			'**',
-			'!**/*.worker.ts',
+			'**/*.js',
+			'!**/*.d.*',
 		])
-	).pipe(
-		sourcemaps.init()
-	).pipe(
-		eslint({
-			configFile: './.eslint.js',
-		})
-	).pipe(
-		eslint.format()
-	).pipe(
-		eslint.failAfterError()
-	).pipe(newer({
-		dest: './tmp/',
-		ext: '.js',
-	})).pipe(
-		typescript.createProject('./tsconfig.json')()
-	).pipe(
-		replace(/\ {4}/g, '\t')
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(gulp.dest(
-		'./tmp/'
-	));
-});
-
-gulp.task('ts--workers', () => {
-	return gulp.src(
-		'./src/{js,data}/**/*.worker.ts'
-	).pipe(
-		sourcemaps.init()
-	).pipe(
-		eslint({
-			configFile: './.eslint.js',
-		})
-	).pipe(
-		eslint.format()
-	).pipe(
-		eslint.failAfterError()
-	).pipe(newer({
-		dest: './tmp/',
-		ext: '.js',
-	})).pipe(
-		typescript.createProject('./tsconfig.workers.json')()
-	).pipe(
-		replace(/\ {4}/g, '\t')
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(gulp.dest(
-		'./tmp/'
-	));
-});
-
-gulp.task('sync--ipfs', () => {
-	return gulp.src('./node_modules/ipfs/dist/**/*.*').pipe(
-		changed(
-			'./dist/ipfs/',
-			{
-				hasChanged: changed.compareContents
-			}
-		)
-	).pipe(gulp.dest(
-		'./dist/ipfs/'
-	));
-});
-
-gulp.task('sync--ipfs--build-module', () => {
-	return gulp.src('./node_modules/ipfs/dist/index.js').pipe(
-		sourcemaps.init({loadMaps: true})
-	).pipe(
-		rename('index.module.js')
-	).pipe(
-		newer('./dist/ipfs/')
-	).pipe(
-		replace(
-			'(function webpackUniversalModuleDefinition(root, factory) {',
-			(
-				'const notWindow = {};' +
-				'\n' +
-				'(function webpackUniversalModuleDefinition(root, factory) {'
-			)
-		)
-	).pipe(
-		replace(
-			'})(window, function() {',
-			'})(notWindow, function() {'
-		)
-	).pipe(
-		replace(
-			(
-				'/******/ ]);' +
-				'\n' +
-				'});'
-			),
-			(
-				'/******/ ]);' +
-				'\n' +
-				'});' +
-				'\n' +
-				'export const Ipfs = notWindow[\'Ipfs\'];' +
-				'\n' +
-				'export default notWindow[\'Ipfs\'];'
-			)
-		)
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(
-		gulp.dest('./dist/ipfs/')
-	)
-});
-
-gulp.task('sync--ipfs--minify-module', () => {
-	return gulp.src('./dist/ipfs/index.module.js').pipe(
-		sourcemaps.init({loadMaps:true})
-	).pipe(
-		rename('index.module.min.js')
-	).pipe(
-		newer('./dist/ipfs/')
-	).pipe(uglify()).pipe(sourcemaps.write('./')).pipe(
-		gulp.dest('./dist/ipfs/')
-	);
-});
-
-gulp.task('sync--lit-html', () => {
-	return gulp.src('./node_modules/lit-html/**/*.*').pipe(
-		changed(
-			'./dist/lit-html/',
-			{
-				hasChanged: changed.compareContents
-			}
-		)
-	).pipe(gulp.dest(
-		'./dist/lit-html/'
-	)).pipe(gulp.dest(
-		'./src/lit-html/'
-	));
-});
-
-gulp.task('sync', () => {
-	return gulp.src([
-		'./tmp/{css/*.*,data/*.json,{js,data}/**/*.d.ts}',
-		'./src/module.d.ts',
-	]).pipe(
-		changed(
-			'./dist/',
-			{
-				hasChanged: changed.compareContents
-			}
-		)
-	).pipe(gulp.dest(
-		'./dist/'
-	));
-});
-
-gulp.task('sync--html', () => {
-	return gulp.src([
-		'./tmp/*.html',
-	]).pipe(
-		newer('./dist/')
-	).pipe(
-		inline_source()
-	).pipe(
-		gulp.dest('./dist/')
-	)
-});
-
-gulp.task('uglify', () => {
-	return gulp.src(
-		'./tmp/{js,data}/**/*.js'
-	).pipe(
-		newer('./dist/')
 	).pipe(
 		sourcemaps.init({loadMaps: true})
 	).pipe(
 		uglify()
 	).pipe(
 		sourcemaps.write('./')
-	).pipe(gulp.dest('./dist/'));
-});
+	).pipe(dest('./src/'));
+};
 
-gulp.task('default', gulp.series(
-	gulp.parallel(
-		'html',
-		'ts',
-		'ts--workers',
-		'sync--lit-html',
-		'sync--ipfs',
-		'sync--ipfs--build-module'
-	),
-	gulp.parallel(
-		'sync--ipfs--minify-module',
-		'css--first-load',
-		'css--style'
-	),
-	gulp.parallel(
-		'sync',
-		'sync--html',
-		'uglify'
-	)
-));
+exports.default = parallel(...[
+	exports.ts,
+	exports.cacheIpfsTreeAsJson,
+]);

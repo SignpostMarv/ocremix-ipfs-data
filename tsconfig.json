@@ -7,14 +7,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
 		"lib": [
-			"dom",
-			"dom.iterable",
 			"esnext"
-		],
-		"plugins": [
-			{
-				"name": "typescript-lit-html-plugin"
-			}
 		],
 		"module": "ESNext",
 		"newLine": "lf",
@@ -25,11 +18,8 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"strict": true,
-		"declarationDir": "./dist/",
+		"declarationDir": "./src/",
 		"rootDir": "./",
 		"target": "ESNext"
-	},
-	"exclude": [
-		"./src/**/*.worker.ts"
-	]
+	}
 }

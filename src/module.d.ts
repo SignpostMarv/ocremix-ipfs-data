@@ -11,7 +11,7 @@ export interface ImageSource extends SrcsetSource {
 export interface Discs {[name: string]: Array<Track>}
 
 export interface Album {
-	id: string,
+	id: string;
 	path: string;
 	name: string;
 	discs: Discs;
@@ -26,26 +26,3 @@ export interface Track {
 	subpath: string;
 	index: number;
 }
-
-export interface IpfsGlobal {
-	create: () => Promise<IpfsInstance>;
-}
-
-export interface IpfsInstance {
-	cat: (cid: string) => AsyncGenerator<Uint8Array>;
-}
-
-export type SupportedExtensionLower = (
-	'mp3'|
-	'png'|
-	'jpg'|
-	'jpeg'
-);
-
-export type SupportedExtensionUpperOrLower = (
-	SupportedExtensionLower|
-	'MP3'|
-	'PNG'|
-	'JPG'|
-	'JPEG'
-);
