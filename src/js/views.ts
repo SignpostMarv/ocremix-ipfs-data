@@ -4,35 +4,26 @@ import {
 } from '../module';
 */
 
-const importedView: {
-	[regexString: string]: Promise<HTMLElement|undefined>;
-} = {};
+import {
+	updateTitleSuffix
+} from './utilities/elements.js';
+
 const albumHashRegex = /^#album\/(OCRA\d{4})$/;
 
-function buildView(
-	entry: [string, string]
-): (hash: string) => Promise<HTMLElement|undefined> {
-	const [regexString, viewModule] = entry;
-
-	const regex = new RegExp(regexString);
-
-	return async (hash: string): Promise<HTMLElement|undefined> => {
-		if ( ! regex.test(hash)) {
-			return;
-		} else if ( ! (regexString in importedView)) {
-			importedView[regexString] = (await import(viewModule)).default;
-		}
-
-		return importedView[regexString];
-	};
-}
-
-const views = Object.entries({
-	'^#?$': './views/albums.js',
-}).map(buildView);
+const views: Array<(hash: string) => Promise<HTMLElement|undefined>> = [];
 /*
 let currentAlbum: Album|undefined;
 */
+
+views.push(async (hash: string): Promise<HTMLElement|undefined> => {
+	if ( ! /^#?$/.test(hash)) {
+		return;
+	}
+
+	const { albumsView } = await import('./views/albums.js');
+
+	return await albumsView();
+});
 
 views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 	if ( ! /^#app$/.test(hash)) {
@@ -59,15 +50,15 @@ views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 
 	const [
 		view,
-		/*
 		album,
-		*/
 	] = result;
 
 	if (location.hash === hash) {
 		/*
 		currentAlbum = album;
 		*/
+
+		updateTitleSuffix(album.name);
 
 		return view;
 	} else {
@@ -78,7 +69,11 @@ views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 
 	return;
 });
-views.push(buildView(['.+', './views/not-found.js']));
+views.push(async (): Promise<HTMLElement> => {
+	const { notFound } = await import('./views/not-found.js');
+
+	return await notFound();
+});
 
 export async function handleView(hash: string): Promise<HTMLElement> {
 	for await (const maybe of views) {

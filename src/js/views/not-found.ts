@@ -2,6 +2,9 @@ import {
 	render,
 	html,
 } from '../../lit-html/lit-html.js';
+import {
+	updateTitleSuffix,
+} from '../utilities/elements.js';
 
 const main = document.createElement('main');
 
@@ -13,4 +16,8 @@ render(
 	main
 );
 
-export default main;
+export async function notFound(): Promise<HTMLElement> {
+	updateTitleSuffix('Not Found');
+
+	return main;
+}

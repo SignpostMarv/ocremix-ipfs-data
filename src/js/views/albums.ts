@@ -16,7 +16,8 @@ import {
 	Albums,
 } from '../../data/albums.js';
 import {
-	yieldPlaceholderThenPicture
+	yieldPlaceholderThenPicture,
+	updateTitleSuffix,
 } from '../utilities/elements.js';
 
 const albums = document.createElement('main');
@@ -50,4 +51,8 @@ async function* renderAlbums(): AsyncGenerator<TemplateResult> {
 
 render(html`${asyncAppend(renderAlbums())}`, albums);
 
-export default albums;
+export async function albumsView(): Promise<HTMLElement> {
+	updateTitleSuffix('');
+
+	return albums;
+}

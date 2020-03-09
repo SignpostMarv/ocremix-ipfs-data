@@ -19,6 +19,7 @@ import {
 } from '../data.js';
 import {
 	yieldPlaceholderThenPicture,
+	updateTitleSuffix,
 } from '../utilities/elements.js';
 
 const appInfo = document.createElement('main');
@@ -233,6 +234,8 @@ async function updateBulkAlbumActions(
 }
 
 export async function updateAppInfo(): Promise<HTMLElement> {
+	updateTitleSuffix('App Info');
+
 	if ( ! rendered) {
 		render(
 			html`

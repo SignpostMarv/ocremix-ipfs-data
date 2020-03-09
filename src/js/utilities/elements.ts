@@ -5,10 +5,19 @@ import {
 import {
 	TemplateResult,
 	html,
+	render,
 } from '../../lit-html/lit-html.js';
 import {
 	urlForThing,
 } from '../data.js';
+
+const title = document.head.querySelector('title');
+
+if ( ! title) {
+	throw new Error('Could not locate title element!');
+}
+
+const initialTitle = title.textContent;
 
 export async function picture(
 	album: Album,
@@ -73,4 +82,15 @@ export async function* yieldAlbumBackground(
 	album: Album
 ): AsyncGenerator<HTMLPictureElement> {
 	yield await picture(album, album.art.background, 'bg');
+}
+
+export function updateTitleSuffix(suffix: string): void {
+	render(
+		html`${
+			('' === suffix.trim())
+				? html`${initialTitle}`
+				: html`${initialTitle} | ${suffix.trim()}`
+		}`,
+		title as HTMLTitleElement
+	);
 }
