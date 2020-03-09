@@ -11,6 +11,7 @@ export interface ImageSource extends SrcsetSource {
 export interface Discs {[name: string]: Array<Track>}
 
 export interface Album {
+	id: string,
 	path: string;
 	name: string;
 	discs: Discs;

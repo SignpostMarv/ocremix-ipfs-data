@@ -1,6 +1,7 @@
 import { Album } from '../../module';
 
 export const OCRA0006: Album = {
+	id: 'OCRA0006',
 	path: '/Albums/Chrono Symphonic',
 	name: 'Chrono Symphonic',
 	art: {

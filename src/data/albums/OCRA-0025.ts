@@ -1,6 +1,7 @@
 import { Album } from '../../module';
 
 export const OCRA0025: Album = {
+	id: 'OCRA0025',
 	path: '/Albums/Sonic the Hedgehog - The Sound of Speed',
 	name: 'Sonic the Hedgehog - The Sound of Speed',
 	art: {
