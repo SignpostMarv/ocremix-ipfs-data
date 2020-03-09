@@ -1,11 +1,11 @@
 import { handleView } from './views.js';
 
 (async (): Promise<void> => {
-	const preloads = {
-		'style.css': document.head.querySelector(
-			'link[rel="preload"][as="style"][href$="/css/style.css"]'
-		),
-	};
+	[...document.head.querySelectorAll(
+		'link[rel="preload"][as="style"][href*="/css/"][href$=".css"]'
+	)].forEach((preloadStylesheet) => {
+		(preloadStylesheet as HTMLLinkElement).rel = 'stylesheet';
+	})
 
 	const back: HTMLAnchorElement|null = document.querySelector(
 		'body > header a#load-albums'
@@ -14,14 +14,6 @@ import { handleView } from './views.js';
 	if ( ! (back instanceof HTMLAnchorElement)) {
 		throw new Error('Could not find back button');
 	}
-
-	Object.entries(preloads).forEach((entry) => {
-		if ( ! (entry[1] instanceof HTMLLinkElement)) {
-			throw new Error('Could not find preloaded ' + entry[0]);
-		}
-	});
-
-	(preloads['style.css'] as HTMLLinkElement).rel = 'stylesheet';
 
 	function swapMain(useThisInstead: HTMLElement, allowBack = true): void {
 		for (const toRemove of document.querySelectorAll('body > main')) {
