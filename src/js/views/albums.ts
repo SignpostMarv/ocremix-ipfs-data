@@ -31,6 +31,7 @@ async function AddAlbum(
 	const button = html`<a
 		class="entry"
 		href="#album/${albumId}"
+		data-name="${album.name}"
 		aria-label="View &quot;${album.name}&quot;"
 	>${asyncReplace(yieldPlaceholderThenPicture(
 		'Loading...',
