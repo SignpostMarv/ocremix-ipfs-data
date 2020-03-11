@@ -2,7 +2,7 @@ import { Album } from '../../module';
 
 export const OCRA0008: Album = {
 	id: 'OCRA0008',
-	path: '/albums/Sonic 3 and Knuckles - Project Chaos',
+	path: '/Albums/Sonic 3 and Knuckles - Project Chaos',
 	name: 'Sonic 3 and Knuckles - Project Chaos',
 	discs: {
 		"Disc 1": [
