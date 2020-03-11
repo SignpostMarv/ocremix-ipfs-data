@@ -46,7 +46,7 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 			}
 
 			const ocremix = await ReadIpfsDir(
-				'QmR1eofNS6jaJu8vpHhSZ5jRXDbpUgs9ku6qHT44ySSTEn'
+				'QmY12LCQd5DQBDVUi1Z8QW8tDMimdTwTiGhjNCL8cQkpk4'
 			);
 
 			const fs = require('fs');

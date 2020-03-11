@@ -15,6 +15,9 @@ export interface Album {
 	path: string;
 	name: string;
 	discs: Discs;
+}
+
+export interface AlbumWithArt extends Album {
 	art: {
 		covers: Array<ImageSource>;
 		background: ImageSource;
