@@ -4,12 +4,11 @@ const {
 	parallel,
 } = require('gulp');
 const typescript = require('gulp-typescript');
-const rename = require('gulp-rename');
 const eslint = require('gulp-eslint');
-const filter = require('gulp-filter');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
 const tsProject = typescript.createProject('./tsconfig.json')();
+const merge = require('merge-stream');
 
 exports.cacheIpfsTreeAsJson = async (cb) => {
 	const ipfs = await require('ipfs').create();
@@ -82,7 +81,7 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 };
 
 exports.ts = () => {
-	return src('./src/**/*.ts').pipe(
+	const ts = src('./src/**/*.ts').pipe(
 		sourcemaps.init()
 	).pipe(
 		eslint({
@@ -94,19 +93,13 @@ exports.ts = () => {
 		eslint.failAfterError()
 	).pipe(
 		tsProject
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(dest(
-		'./src/'
-	)).pipe(
-		filter([
-			'**/*.js',
-			'!**/*.d.*',
-		])
-	).pipe(
-		sourcemaps.init({loadMaps: true})
-	).pipe(
+	);
+
+	return merge(
+		ts.js.pipe(
 		uglify()
+		),
+		ts.dts
 	).pipe(
 		sourcemaps.write('./')
 	).pipe(dest('./src/'));
