@@ -6,7 +6,6 @@ export const OCRA0008: Album = {
 	name: 'Sonic 3 and Knuckles - Project Chaos',
 	discs: {
 		"Disc 1": [
-
 			{
 				subpath: "/101 - SnappleMan - Sonic the Hedgehog and Knuckles (Title).mp3",
 				name: "Sonic the Hedgehog and Knuckles (Title)",
