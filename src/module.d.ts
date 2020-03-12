@@ -15,6 +15,12 @@ export interface Album {
 	path: string;
 	name: string;
 	discs: Discs;
+	credits: {
+		directors: Array<Credit>;
+		arrangers: Array<Credit>;
+		composers: Array<Credit>;
+		artwork: Array<Credit>;
+	};
 }
 
 export interface AlbumWithArt extends Album {
@@ -28,8 +34,18 @@ export interface Track {
 	name: string;
 	subpath: string;
 	index: number;
+	credits: Array<Credit|string>;
 }
 
 export interface BrokenTrack extends Track {
 	fixAvailable: boolean;
+}
+
+export interface Credit {
+	name: string | {[locale: string]: string};
+	url: string|undefined;
+}
+
+export interface GroupCredit extends Credit {
+	members: Array<Credit|string>;
 }
