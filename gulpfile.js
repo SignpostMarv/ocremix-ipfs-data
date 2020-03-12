@@ -97,7 +97,7 @@ exports.ts = () => {
 
 	return merge(
 		ts.js.pipe(
-		uglify()
+			uglify()
 		),
 		ts.dts
 	).pipe(
