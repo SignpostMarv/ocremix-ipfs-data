@@ -29,3 +29,7 @@ export interface Track {
 	subpath: string;
 	index: number;
 }
+
+export interface BrokenTrack extends Track {
+	fixAvailable: boolean;
+}

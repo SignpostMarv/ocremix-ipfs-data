@@ -1,4 +1,7 @@
-import { Album } from '../../module';
+import {
+	Album,
+	BrokenTrack
+} from '../../module';
 
 export const OCRA0008: Album = {
 	id: 'OCRA0008',
@@ -155,37 +158,44 @@ export const OCRA0008: Album = {
 				subpath: "/308 - Rayza - Groove Basin (Azure Lake WIP).mp3",
 				name: "Groove Basin (Azure Lake WIP)",
 				index: 8,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/309 - AkumajoBelmont - Water on the Dancefloor (Hydrocity WIP).mp3",
 				name: "Water on the Dancefloor (Hydrocity WIP)",
 				index: 9,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/310 - Hadyn - Heads Up for Tails (Final Boss).mp3",
 				name: "Heads Up for Tails (Final Boss)",
 				index: 10,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/311 - Kanjika - Stranger to Closure (S3 Credits WIP).mp3",
 				name: "Stranger to Closure (S3 Credits WIP)",
 				index: 11,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/312 - GaMeBoX - Ice Cap 4 Life (IceCap WIP).mp3",
 				name: "Ice Cap 4 Life (IceCap WIP)",
 				index: 12,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/313 - Kanjika - Hydrochill (Hydrocity WIP).mp3",
 				name: "Hydrochill (Hydrocity WIP)",
 				index: 13,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 			{
 				subpath: "/314 - Xenon Odyssey - Lava Passion (Lava Reef WIP).mp3",
 				name: "Xenon Odyssey - Lava Passion (Lava Reef WIP)",
 				index: 14,
-			},
+				fixAvailable: false,
+			} as BrokenTrack,
 		]
 	},
 };
