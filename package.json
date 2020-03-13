@@ -1,21 +1,12 @@
 {
 	"name": "ocremix-ipfs-data",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"description": "Data for accessing OC ReMix content via IPFS",
 	"author": "SignpostMarv",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^2.22.0",
-		"@typescript-eslint/parser": "^2.22.0",
-		"eslint": "^6.8.0",
 		"gulp": "^4.0.2",
-		"gulp-eslint": "^6.0.0",
-		"gulp-sourcemaps": "^2.6.5",
-		"gulp-typescript": "^6.0.0-alpha.1",
-		"gulp-uglify-es": "^2.0.0",
-		"ipfs": "^0.41.2",
-		"merge-stream": "^2.0.0",
-		"typescript": "^3.8.3"
+		"ipfs": "^0.41.2"
 	},
 	"dependencies": {}
 }
