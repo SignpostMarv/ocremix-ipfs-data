@@ -9,6 +9,7 @@ const config = {
 	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
 	'QmXwQvnciFwhWocEp8h4rKM2ytTQDw44ScBRktmRuWSem6': './src/data/OCRA-0029.json',
 };
+
 async function ReadIpfsDir(
 	ipfs,
 	cid,
