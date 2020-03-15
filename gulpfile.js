@@ -53,19 +53,19 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 				const ocremix = await ReadIpfsDir(cid);
 
 				return new Promise(entryDone => {
-			fs.writeFile(
-						filename.replace(/\.json$/, '.min.json'),
-				JSON.stringify(ocremix),
-				() => {
 					fs.writeFile(
-								filename,
-						JSON.stringify(ocremix, null, '\t'),
+						filename.replace(/\.json$/, '.min.json'),
+						JSON.stringify(ocremix),
 						() => {
+							fs.writeFile(
+								filename,
+								JSON.stringify(ocremix, null, '\t'),
+								() => {
 									entryDone();
+								}
+							)
 						}
-					)
-				}
-			);
+					);
 				});
 			}));
 
