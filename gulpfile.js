@@ -9,37 +9,37 @@ const config = {
 	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
 	'QmXwQvnciFwhWocEp8h4rKM2ytTQDw44ScBRktmRuWSem6': './src/data/OCRA-0029.json',
 };
-			async function ReadIpfsDir(
+async function ReadIpfsDir(
 	ipfs,
-				cid,
-				directory_alias = '/'
-			) {
-				console.log('checking ' + directory_alias);
+	cid,
+	directory_alias = '/'
+) {
+	console.log('checking ' + directory_alias);
 
-				const ls = await ipfs.files.ls(
-					'/ipfs/' + cid,
-					{long:true}
-				);
+	const ls = await ipfs.files.ls(
+		'/ipfs/' + cid,
+		{long:true}
+	);
 
-				const dir = {};
+	const dir = {};
 
-				for await(const entry of ls) {
-					if (0 === entry.type) {
-						dir[directory_alias + entry.name] = entry.cid.toString();
-						console.log('got cid for ' + directory_alias + entry.name);
-					} else if (1 === entry.type) {
-						for (const subentry of Object.entries(await ReadIpfsDir(
+	for await(const entry of ls) {
+		if (0 === entry.type) {
+			dir[directory_alias + entry.name] = entry.cid.toString();
+			console.log('got cid for ' + directory_alias + entry.name);
+		} else if (1 === entry.type) {
+			for (const subentry of Object.entries(await ReadIpfsDir(
 				ipfs,
-							cid + '/' + entry.name,
-							directory_alias + entry.name + '/'
-						))) {
-							dir[subentry[0]] = subentry[1];
-						}
-					}
-				}
-
-				return dir;
+				cid + '/' + entry.name,
+				directory_alias + entry.name + '/'
+			))) {
+				dir[subentry[0]] = subentry[1];
 			}
+		}
+	}
+
+	return dir;
+}
 
 exports.cacheIpfsTreeAsJson = async (cb) => {
 	const ipfs = await require('ipfs').create();
