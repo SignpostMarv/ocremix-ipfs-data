@@ -9,13 +9,8 @@ const config = {
 	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
 	'QmXwQvnciFwhWocEp8h4rKM2ytTQDw44ScBRktmRuWSem6': './src/data/OCRA-0029.json',
 };
-
-exports.cacheIpfsTreeAsJson = async (cb) => {
-	const ipfs = await require('ipfs').create();
-
-	await new Promise(async (yup, nope) => {
-		try {
 			async function ReadIpfsDir(
+	ipfs,
 				cid,
 				directory_alias = '/'
 			) {
@@ -34,6 +29,7 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 						console.log('got cid for ' + directory_alias + entry.name);
 					} else if (1 === entry.type) {
 						for (const subentry of Object.entries(await ReadIpfsDir(
+				ipfs,
 							cid + '/' + entry.name,
 							directory_alias + entry.name + '/'
 						))) {
@@ -45,12 +41,17 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 				return dir;
 			}
 
+exports.cacheIpfsTreeAsJson = async (cb) => {
+	const ipfs = await require('ipfs').create();
+
+	await new Promise(async (yup, nope) => {
+		try {
 			const fs = require('fs');
 
 			await Promise.all(Object.entries(config).map(async entry => {
 				const [cid, filename] = entry;
 
-				const ocremix = await ReadIpfsDir(cid);
+				const ocremix = await ReadIpfsDir(ipfs, cid);
 
 				return new Promise(entryDone => {
 					fs.writeFile(
