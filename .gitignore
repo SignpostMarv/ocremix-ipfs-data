@@ -1,7 +1,2 @@
 /node_modules/
-/src/data/ocremix-cids.json
-/src/data/ocremix-cids.min.json
-/src/**/*.js
-/src/**/*.js.map
-/src/**/*.ts.map
-/src/**/*.d.ts
+/src/data/**/*.json

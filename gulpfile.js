@@ -2,6 +2,14 @@ const {
 	parallel,
 } = require('gulp');
 
+const config = {
+	'QmY12LCQd5DQBDVUi1Z8QW8tDMimdTwTiGhjNCL8cQkpk4': './src/data/ocremix-cids.json',
+	'QmSRSET4CY6hSEZQ8p2UsQm7gNK4PVCQbGxuNpucMdaRKS': './src/data/OCRA-0006.json',
+	'QmRiNyNkaz8qjEYVWGQnzFEqxd5hiKjFZTD3oi59J8eazB': './src/data/OCRA-0008.json',
+	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
+	'QmXwQvnciFwhWocEp8h4rKM2ytTQDw44ScBRktmRuWSem6': './src/data/OCRA-0029.json',
+};
+
 exports.cacheIpfsTreeAsJson = async (cb) => {
 	const ipfs = await require('ipfs').create();
 
@@ -37,25 +45,31 @@ exports.cacheIpfsTreeAsJson = async (cb) => {
 				return dir;
 			}
 
-			const ocremix = await ReadIpfsDir(
-				'QmY12LCQd5DQBDVUi1Z8QW8tDMimdTwTiGhjNCL8cQkpk4'
-			);
-
 			const fs = require('fs');
 
+			await Promise.all(Object.entries(config).map(async entry => {
+				const [cid, filename] = entry;
+
+				const ocremix = await ReadIpfsDir(cid);
+
+				return new Promise(entryDone => {
 			fs.writeFile(
-				'./src/data/ocremix-cids.min.json',
+						filename.replace(/\.json$/, '.min.json'),
 				JSON.stringify(ocremix),
 				() => {
 					fs.writeFile(
-						'./src/data/ocremix-cids.json',
+								filename,
 						JSON.stringify(ocremix, null, '\t'),
 						() => {
-							yup(0);
+									entryDone();
 						}
 					)
 				}
 			);
+				});
+			}));
+
+			yup(0);
 		} catch (err) {
 			yup(err);
 		}
