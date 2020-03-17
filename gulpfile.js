@@ -3,7 +3,8 @@ const {
 } = require('gulp');
 
 const config = {
-	'QmY12LCQd5DQBDVUi1Z8QW8tDMimdTwTiGhjNCL8cQkpk4': './src/data/ocremix-cids.json',
+	'QmbHvabVUsd4nDpm6JQKFzoo4LdoT8mMdL1hLLJvUv3S8f': './src/data/ocremix-cids.json',
+	'QmSgSZBbCZZ3fnSHZzRhewNE4qygk4Q6apJfmNyw4NFNj5': './src/data/OCRA-0003.json',
 	'QmSRSET4CY6hSEZQ8p2UsQm7gNK4PVCQbGxuNpucMdaRKS': './src/data/OCRA-0006.json',
 	'QmRiNyNkaz8qjEYVWGQnzFEqxd5hiKjFZTD3oi59J8eazB': './src/data/OCRA-0008.json',
 	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
