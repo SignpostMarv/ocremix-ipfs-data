@@ -13,4 +13,4 @@ assignees: SignpostMarv
 * [ ] The album ID has been found in [the OCR Albums directory](https://ocremix.org/albums/?&offset=0&sort=nameasc)
 
 **Potential Issues**
-Does the album have any issues, i.e. [OCRA-0008](https://ocremix.org/album/9/sonic-3-and-knuckles-project-chaos) has artwork on the OCR website, but not in the corresponding torrent.
+Does the album have any issues, i.e. are some of the MP3s in the original torrent unplayable.
