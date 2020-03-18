@@ -8,7 +8,7 @@ assignees: SignpostMarv
 ---
 
 **Checklist**
-* [ ] The album is not currently [listed](https://github.com/SignpostMarv/OC-ReMix-IPFS-Portal/tree/master/src/data/albums), [requested](https://github.com/SignpostMarv/OC-ReMix-IPFS-Portal/issues), or [submitted](https://github.com/SignpostMarv/OC-ReMix-IPFS-Portal/pulls)
+* [ ] The album is not currently [listed](https://github.com/SignpostMarv/ocremix-ipfs-data/blob/master/gulpfile.js#L5), [requested](https://github.com/SignpostMarv/ocremix-ipfs-data/issues), or [submitted](https://github.com/SignpostMarv/ocremix-ipfs-data/pulls)
 * [ ] The album is listed on [the OCR Torrent Tracker](https://ocremix.org/torrents)
 * [ ] The album ID has been found in [the OCR Albums directory](https://ocremix.org/albums/?&offset=0&sort=nameasc)
 
