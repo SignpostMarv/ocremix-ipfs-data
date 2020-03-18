@@ -3,12 +3,13 @@ const {
 } = require('gulp');
 
 const config = {
-	'QmbHvabVUsd4nDpm6JQKFzoo4LdoT8mMdL1hLLJvUv3S8f': './src/data/ocremix-cids.json',
+	'QmY9kUp6FJ7qZHEWMtDbsgT6wags7Wjq3LuHXn7BLErhA9': './src/data/ocremix-cids.json',
 	'QmSgSZBbCZZ3fnSHZzRhewNE4qygk4Q6apJfmNyw4NFNj5': './src/data/OCRA-0003.json',
 	'QmSRSET4CY6hSEZQ8p2UsQm7gNK4PVCQbGxuNpucMdaRKS': './src/data/OCRA-0006.json',
 	'QmRiNyNkaz8qjEYVWGQnzFEqxd5hiKjFZTD3oi59J8eazB': './src/data/OCRA-0008.json',
 	'QmeaLLGzEQJ9kpwxoNhCG3honp2faJfKhGrrRvtK8DtxAs': './src/data/OCRA-0025.json',
 	'QmXwQvnciFwhWocEp8h4rKM2ytTQDw44ScBRktmRuWSem6': './src/data/OCRA-0029.json',
+	'QmT7JWNFiZ6eLtBQ9NEuUWqem6GPaQuA6rmjjw8Whgw9Bz': './src/data/OCRA-0060.json',
 };
 
 async function ReadIpfsDir(
